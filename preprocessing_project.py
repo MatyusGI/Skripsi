@@ -626,7 +626,7 @@ def training_vim(train_x, train_y):
 
     # Training loop
     model.train()  # Set the model to training mode
-    num_epochs = 20  # Define the number of epochs
+    num_epochs = 50  # Define the number of epochs
     verbose = True  # Set verbose to True to print correlation
 
     # Initialize lists to store the loss and correlation values for each epoch
