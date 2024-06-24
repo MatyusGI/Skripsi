@@ -590,387 +590,387 @@ def create_test_set(train_x, train_y, test_size=None, random_state=0):
     return train_x, test_x, train_y, test_y, indices_train, indices_test
 
 
-# def training_vim(train_x, train_y):
-#     # Check if GPU is available
-#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def training_vim(train_x, train_y):
+    # Check if GPU is available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-#     # Assuming train_x and train_y are your input arrays
-#     train_x_t = torch.tensor(train_x, dtype=torch.float32).to(device)
-#     train_y_t = torch.tensor(train_y, dtype=torch.float32).to(device)
+    # Assuming train_x and train_y are your input arrays
+    train_x_t = torch.tensor(train_x, dtype=torch.float32).to(device)
+    train_y_t = torch.tensor(train_y, dtype=torch.float32).to(device)
 
-#     # Create a TensorDataset and DataLoader
-#     dataset = TensorDataset(train_x_t, train_y_t)
-#     train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
+    # Create a TensorDataset and DataLoader
+    dataset = TensorDataset(train_x_t, train_y_t)
+    train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
 
-#     # Initialize the Vim model
-#     model = Vim(
-#         dim=256,
-#         # heads=8,
-#         dt_rank=32,
-#         dim_inner=256,
-#         d_state=256,
-#         num_classes=1,  # For regression, typically the output is a single value per instance
-#         image_size=286,
-#         patch_size=13,
-#         channels=1,
-#         dropout=0.1,
-#         depth=12,
-#     )
+    # Initialize the Vim model
+    model = Vim(
+        dim=256,
+        # heads=8,
+        dt_rank=32,
+        dim_inner=256,
+        d_state=256,
+        num_classes=1,  # For regression, typically the output is a single value per instance
+        image_size=286,
+        patch_size=13,
+        channels=1,
+        dropout=0.1,
+        depth=12,
+    )
 
-#     # Move the model to the GPU
-#     model.to(device)
+    # Move the model to the GPU
+    model.to(device)
 
-#     # Using Mean Squared Error Loss for a regression task
-#     criterion = MSELoss()
-#     optimizer = optim.Adam(model.parameters(), lr=0.001)
+    # Using Mean Squared Error Loss for a regression task
+    criterion = MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-#     # Training loop
-#     model.train()  # Set the model to training mode
-#     num_epochs = 20  # Define the number of epochs
-#     verbose = True  # Set verbose to True to print correlation
+    # Training loop
+    model.train()  # Set the model to training mode
+    num_epochs = 20  # Define the number of epochs
+    verbose = True  # Set verbose to True to print correlation
 
-#     # Initialize lists to store the loss and correlation values for each epoch
-#     loss_values = []
-#     correlation_values = []
+    # Initialize lists to store the loss and correlation values for each epoch
+    loss_values = []
+    correlation_values = []
 
-#     # Record the start time
-#     start_time = time.time()
+    # Record the start time
+    start_time = time.time()
 
-#     for epoch in range(num_epochs):
-#         total_loss = 0.0
-#         num_batches = 0
-#         outputs_all = []
-#         targets_all = []
+    for epoch in range(num_epochs):
+        total_loss = 0.0
+        num_batches = 0
+        outputs_all = []
+        targets_all = []
 
-#         for batch_inputs, batch_targets in train_loader:
-#             # Move the inputs and targets to the GPU
-#             batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
+        for batch_inputs, batch_targets in train_loader:
+            # Move the inputs and targets to the GPU
+            batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
 
-#             optimizer.zero_grad()  # Zero the parameter gradients
+            optimizer.zero_grad()  # Zero the parameter gradients
 
-#             # Forward pass
-#             outputs = model(batch_inputs)
-#             loss = criterion(outputs, batch_targets)
+            # Forward pass
+            outputs = model(batch_inputs)
+            loss = criterion(outputs, batch_targets)
 
-#             # Backward pass and optimize
-#             loss.backward()
-#             optimizer.step()
+            # Backward pass and optimize
+            loss.backward()
+            optimizer.step()
 
-#             # Accumulate loss
-#             total_loss += loss.item()
-#             num_batches += 1
+            # Accumulate loss
+            total_loss += loss.item()
+            num_batches += 1
 
-#             # Debugging shapes
-#             print("Output shape:", outputs.shape)
-#             print("Target shape:", batch_targets.shape)
+            # Debugging shapes
+            print("Output shape:", outputs.shape)
+            print("Target shape:", batch_targets.shape)
 
-#             # Collect outputs and targets for correlation, ensure they are flattened
-#             outputs_all.append(outputs.view(-1).detach().cpu().numpy())
-#             targets_all.append(batch_targets.view(-1).detach().cpu().numpy())
+            # Collect outputs and targets for correlation, ensure they are flattened
+            outputs_all.append(outputs.view(-1).detach().cpu().numpy())
+            targets_all.append(batch_targets.view(-1).detach().cpu().numpy())
 
-#         # Calculate average loss for the epoch
-#         average_loss = total_loss / num_batches
-#         print(f'Epoch {epoch + 1}: Average Loss {average_loss:.4f}')
+        # Calculate average loss for the epoch
+        average_loss = total_loss / num_batches
+        print(f'Epoch {epoch + 1}: Average Loss {average_loss:.4f}')
 
-#         # Compute correlation
-#         outputs_flat = np.concatenate(outputs_all)
-#         targets_flat = np.concatenate(targets_all)
-#         corr = np.corrcoef(outputs_flat, targets_flat)[0, 1]
-#         if verbose:
-#             print('Epoch {}: Correlation: {:.4f}'.format(epoch + 1, corr))
-
-#         # Append loss and correlation values to the lists
-#         loss_values.append(average_loss)
-#         correlation_values.append(corr)
-
-#     # Record the end time
-#     end_time = time.time()
-
-#     # Calculate and print the total training time
-#     total_training_time = end_time - start_time
-#     print(f'Total Training Time: {total_training_time:.2f} seconds')
-
-#     return loss_values, correlation_values, num_epochs
-
-
-# def plot_vim(loss_values, correlation_values, num_epochs):
-#     # Plotting loss and correlation
-#     plt.figure(figsize=(12, 5))
-
-#     # Plot loss
-#     plt.subplot(1, 2, 1)
-#     plt.plot(range(1, num_epochs + 1), loss_values, label='Loss')
-#     plt.title('Training Loss over Epochs')
-#     plt.xlabel('Epoch')
-#     plt.ylabel('Loss')
-#     plt.legend()
-
-#     # Plot correlation
-#     plt.subplot(1, 2, 2)
-#     plt.plot(range(1, num_epochs + 1), correlation_values, label='Correlation', color='orange')
-#     plt.title('Correlation over Epochs')
-#     plt.xlabel('Epoch')
-#     plt.ylabel('Correlation')
-#     plt.legend()
-
-#     # plt.show()
-
-#     # Save the plot to a file
-#     plt.savefig('training_performance.png')
-#     plt.close()  # Close the figure to free up memory
-
-
-
-class ANTIPASTI(Module):
-    r"""Predicting the binding affinity of an antibody from its normal mode correlation map.
-
-    Parameters
-    ----------
-    n_filters: int
-        Number of filters in the convolutional layer.
-    filter_size: int
-        Size of filters in the convolutional layer.
-    pooling_size: int
-        Size of the max pooling operation.
-    input_shape: int
-        Shape of the normal mode correlation maps.
-    l1_lambda: float
-        Weight of L1 regularisation.
-    mode: str
-        To use the full model, provide ``full``. Otherwise, ANTIPASTI corresponds to a linear map.
-
-    """
-    def __init__(
-            self,
-            n_filters=2,
-            filter_size=4,
-            pooling_size=1,
-            input_shape=281,
-            l1_lambda=0.002,
-            mode='full',
-    ):
-        super(ANTIPASTI, self).__init__()
-        self.n_filters = n_filters
-        self.filter_size = filter_size
-        self.pooling_size = pooling_size
-        self.input_shape = input_shape
-        self.mode = mode
-        if self.mode == 'full':
-            self.fully_connected_input = n_filters * ((input_shape-filter_size+1)//pooling_size) ** 2
-            self.conv1 = Conv2d(1, n_filters, filter_size)
-            self.pool = MaxPool2d((pooling_size, pooling_size))
-            self.relu = ReLU()
-        else:
-            self.fully_connected_input = self.input_shape ** 2
-        self.fc1 = Linear(self.fully_connected_input, 1, bias=False)
-        self.l1_lambda = l1_lambda
-
-    def forward(self, x):
-        r"""Model's forward pass.
-
-        Returns
-        -------
-        output: torch.Tensor
-            Predicted binding affinity.
-        inter_filter: torch.Tensor
-            Filters before the fully-connected layer.
-
-        """
-        inter = x
-        if self.mode == 'full':
-            x = self.conv1(x) + torch.transpose(self.conv1(x), 2, 3)
-            x = self.relu(x)
-            inter = x = self.pool(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc1(x)
-
-        return x.float(), inter
-
-    def l1_regularization_loss(self):
-        l1_loss = torch.tensor(0.0)
-        for param in self.parameters():
-            l1_loss += torch.norm(param, p=1)
-        return self.l1_lambda * l1_loss
-    
-def training_step(model, criterion, optimiser, train_x, test_x, train_y, test_y, train_losses, test_losses, epoch, batch_size, verbose):
-    r"""Performs a training step.
-
-    Parameters
-    ----------
-    model: antipasti.model.model.ANTIPASTI
-        The model class, i.e., ``ANTIPASTI``.
-    criterion: torch.nn.modules.loss.MSELoss
-        It calculates a gradient according to a selected loss function, i.e., ``MSELoss``.
-    optimiser: adabelief_pytorch.AdaBelief.AdaBelief
-        Method that implements an optimisation algorithm.
-    train_x: torch.Tensor
-        Training normal mode correlation maps.
-    test_x: torch.Tensor
-        Test normal mode correlation maps.
-    train_y: torch.Tensor
-        Training labels.
-    test_y: torch.Tensor
-        Test labels.
-    train_losses: list
-        The current history of training losses.
-    test_losses: list
-        The current history of test losses.
-    epoch: int
-        Of value ``e`` if the dataset has gone through the model ``e`` times.
-    batch_size: int
-        Number of samples that pass through the model before its parameters are updated.
-    verbose: bool
-        ``True`` to print the losses in each epoch.
-
-    Returns
-    -------
-    train_losses: list
-        The history of training losses after the training step.
-    test_losses: list
-        The history of test losses after the training step.
-    inter_filter: torch.Tensor
-        Filters before the fully-connected layer.
-    y_test: torch.Tensor
-        Ground truth test labels.
-    output_test: torch.Tensor
-        The predicted test labels.
-
-    """
-    tr_loss = 0
-    tr_mse = 0
-    x_train, y_train = Variable(train_x), Variable(train_y)
-    x_test, y_test = Variable(test_x), Variable(test_y)
-
-    # Filters before the fully-connected layer
-    size_inter = int(np.sqrt(model.fully_connected_input/model.n_filters))
-    inter_filter = np.zeros((x_train.size()[0], model.n_filters, size_inter, size_inter))
-    if model.mode != 'full':
-        inter_filter = np.zeros((x_train.size()[0], 1, model.input_shape, model.input_shape))
-    permutation = torch.randperm(x_train.size()[0])
-
-    for i in range(0, x_train.size()[0], batch_size):
-        indices = permutation[i:i+batch_size]
-        batch_x, batch_y = x_train[indices], y_train[indices]
-
-        # Training output
-        output_train, inter_filters = model(batch_x)
-
-        # Picking the appropriate filters before the fully-connected layer
-        inter_filters_detached = inter_filters.detach().clone()
-        inter_filter[i:i+batch_size] = inter_filters_detached.numpy()
-
-        # Training loss, clearing gradients and updating weights
-        optimiser.zero_grad()
-        l1_loss = model.l1_regularization_loss()
-        mse_loss = criterion(output_train[:, 0], batch_y[:, 0])
-        loss_train = mse_loss + l1_loss
+        # Compute correlation
+        outputs_flat = np.concatenate(outputs_all)
+        targets_flat = np.concatenate(targets_all)
+        corr = np.corrcoef(outputs_flat, targets_flat)[0, 1]
         if verbose:
-            print(l1_loss)
-        loss_train.backward()
-        optimiser.step()
-        # Adding batch contribution to training loss
-        tr_loss += loss_train.item() * batch_size / x_train.size()[0]
-        tr_mse += mse_loss * batch_size / x_train.size()[0]
+            print('Epoch {}: Correlation: {:.4f}'.format(epoch + 1, corr))
 
-    train_losses.append(tr_loss)
-    loss_test = 0
-    output_test = []
+        # Append loss and correlation values to the lists
+        loss_values.append(average_loss)
+        correlation_values.append(corr)
 
-    with torch.no_grad():
-        for i in range(x_test.size()[0]):
-            optimiser.zero_grad()
-            output_t, _ = model(x_test[i].reshape(1, 1, model.input_shape, model.input_shape))
-            l1_loss = model.l1_regularization_loss()
-            loss_t = criterion(output_t[:, 0], y_test[i][:, 0])
-            loss_test += loss_t.item() / x_test.size()[0]
-            if verbose:
-                print(output_t)
-                print(y_test[i])
-                print('------------------------')
-            output_test.append(output_t[:,0].detach().numpy())
-    test_losses.append(loss_test)
+    # Record the end time
+    end_time = time.time()
 
-    # Training and test losses
-    if verbose:
-        print('Epoch : ', epoch+1, '\t', 'train loss: ', tr_loss, 'train MSE: ', tr_mse, 'test MSE: ', loss_test)
+    # Calculate and print the total training time
+    total_training_time = end_time - start_time
+    print(f'Total Training Time: {total_training_time:.2f} seconds')
+
+    return loss_values, correlation_values, num_epochs
 
 
-    return train_losses, test_losses, inter_filter, y_test, output_test
+def plot_vim(loss_values, correlation_values, num_epochs):
+    # Plotting loss and correlation
+    plt.figure(figsize=(12, 5))
 
-def training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=120, max_corr=0.87, batch_size=32, verbose=True):
-    r"""Performs a chosen number of training steps.
+    # Plot loss
+    plt.subplot(1, 2, 1)
+    plt.plot(range(1, num_epochs + 1), loss_values, label='Loss')
+    plt.title('Training Loss over Epochs')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
 
-    Parameters
-    ----------
-    model: antipasti.model.model.ANTIPASTI
-        The model class, i.e., ``ANTIPASTI``.
-    criterion: torch.nn.modules.loss.MSELoss
-        It calculates a gradient according to a selected loss function, i.e., ``MSELoss``.
-    optimiser: adabelief_pytorch.AdaBelief.AdaBelief
-        Method that implements an optimisation algorithm.
-    train_x: torch.Tensor
-        Training normal mode correlation maps.
-    test_x: torch.Tensor
-        Test normal mode correlation maps.
-    train_y: torch.Tensor
-        Training labels.
-    test_y: torch.Tensor
-        Test labels.
-    n_max_epochs: int
-        Number of times the whole dataset goes through the model.
-    max_corr: float
-        If the correlation coefficient exceeds this value, the training routine is terminated.
-    batch_size: int
-        Number of samples that pass through the model before its parameters are updated.
-    verbose: bool
-        ``True`` to print the losses in each epoch.
+    # Plot correlation
+    plt.subplot(1, 2, 2)
+    plt.plot(range(1, num_epochs + 1), correlation_values, label='Correlation', color='orange')
+    plt.title('Correlation over Epochs')
+    plt.xlabel('Epoch')
+    plt.ylabel('Correlation')
+    plt.legend()
 
-    Returns
-    -------
-    train_losses: list
-        The history of training losses after the training routine.
-    test_losses: list
-        The history of test losses after the training routine.
-    inter_filter: torch.Tensor
-        Filters before the fully-connected layer.
-    y_test: torch.Tensor
-        Ground truth test labels.
-    output_test: torch.Tensor
-        The predicted test labels.
-
-    """
-    train_losses = []
-    test_losses = []
-
-    for epoch in range(n_max_epochs):
-        train_losses, test_losses, inter_filter, y_test, output_test = training_step(model, criterion, optimiser, train_x, test_x, train_y, test_y, train_losses, test_losses, epoch, batch_size, verbose)
-
-        # Computing and printing the correlation coefficient
-        corr = np.corrcoef(np.array(output_test).T, y_test[:,0].detach().numpy().T)[1,0]
-        if verbose:
-            print('Corr: ' + str(corr))
-        if corr > max_corr:
-            break
-
-    return train_losses, test_losses, inter_filter, y_test, output_test
-
-def plot_cnn(output_test, y_test):
-    font_size = 14
-    title_size = 20
-
-
-    fig = plt.figure(figsize=(10, 8))
-    plt.scatter(np.array(output_test), y_test[:,0].detach().numpy())
-    corr = np.corrcoef(np.array(output_test).T, y_test[:,0].detach().numpy().T)[1,0]
-    plt.plot([-11,-4],[-11,-4], c='r', linestyle='dashed')
-    plt.title('R = '+str(corr), size=title_size)
-    plt.xlabel('Predicted $log_{10}$($K_d$)', size=font_size)
-    plt.ylabel('True $log_{10}$($K_d$)', size=font_size)
     # plt.show()
 
     # Save the plot to a file
     plt.savefig('training_performance.png')
     plt.close()  # Close the figure to free up memory
+
+
+
+# class ANTIPASTI(Module):
+#     r"""Predicting the binding affinity of an antibody from its normal mode correlation map.
+
+#     Parameters
+#     ----------
+#     n_filters: int
+#         Number of filters in the convolutional layer.
+#     filter_size: int
+#         Size of filters in the convolutional layer.
+#     pooling_size: int
+#         Size of the max pooling operation.
+#     input_shape: int
+#         Shape of the normal mode correlation maps.
+#     l1_lambda: float
+#         Weight of L1 regularisation.
+#     mode: str
+#         To use the full model, provide ``full``. Otherwise, ANTIPASTI corresponds to a linear map.
+
+#     """
+#     def __init__(
+#             self,
+#             n_filters=2,
+#             filter_size=4,
+#             pooling_size=1,
+#             input_shape=281,
+#             l1_lambda=0.002,
+#             mode='full',
+#     ):
+#         super(ANTIPASTI, self).__init__()
+#         self.n_filters = n_filters
+#         self.filter_size = filter_size
+#         self.pooling_size = pooling_size
+#         self.input_shape = input_shape
+#         self.mode = mode
+#         if self.mode == 'full':
+#             self.fully_connected_input = n_filters * ((input_shape-filter_size+1)//pooling_size) ** 2
+#             self.conv1 = Conv2d(1, n_filters, filter_size)
+#             self.pool = MaxPool2d((pooling_size, pooling_size))
+#             self.relu = ReLU()
+#         else:
+#             self.fully_connected_input = self.input_shape ** 2
+#         self.fc1 = Linear(self.fully_connected_input, 1, bias=False)
+#         self.l1_lambda = l1_lambda
+
+#     def forward(self, x):
+#         r"""Model's forward pass.
+
+#         Returns
+#         -------
+#         output: torch.Tensor
+#             Predicted binding affinity.
+#         inter_filter: torch.Tensor
+#             Filters before the fully-connected layer.
+
+#         """
+#         inter = x
+#         if self.mode == 'full':
+#             x = self.conv1(x) + torch.transpose(self.conv1(x), 2, 3)
+#             x = self.relu(x)
+#             inter = x = self.pool(x)
+#         x = x.view(x.size(0), -1)
+#         x = self.fc1(x)
+
+#         return x.float(), inter
+
+#     def l1_regularization_loss(self):
+#         l1_loss = torch.tensor(0.0)
+#         for param in self.parameters():
+#             l1_loss += torch.norm(param, p=1)
+#         return self.l1_lambda * l1_loss
+    
+# def training_step(model, criterion, optimiser, train_x, test_x, train_y, test_y, train_losses, test_losses, epoch, batch_size, verbose):
+#     r"""Performs a training step.
+
+#     Parameters
+#     ----------
+#     model: antipasti.model.model.ANTIPASTI
+#         The model class, i.e., ``ANTIPASTI``.
+#     criterion: torch.nn.modules.loss.MSELoss
+#         It calculates a gradient according to a selected loss function, i.e., ``MSELoss``.
+#     optimiser: adabelief_pytorch.AdaBelief.AdaBelief
+#         Method that implements an optimisation algorithm.
+#     train_x: torch.Tensor
+#         Training normal mode correlation maps.
+#     test_x: torch.Tensor
+#         Test normal mode correlation maps.
+#     train_y: torch.Tensor
+#         Training labels.
+#     test_y: torch.Tensor
+#         Test labels.
+#     train_losses: list
+#         The current history of training losses.
+#     test_losses: list
+#         The current history of test losses.
+#     epoch: int
+#         Of value ``e`` if the dataset has gone through the model ``e`` times.
+#     batch_size: int
+#         Number of samples that pass through the model before its parameters are updated.
+#     verbose: bool
+#         ``True`` to print the losses in each epoch.
+
+#     Returns
+#     -------
+#     train_losses: list
+#         The history of training losses after the training step.
+#     test_losses: list
+#         The history of test losses after the training step.
+#     inter_filter: torch.Tensor
+#         Filters before the fully-connected layer.
+#     y_test: torch.Tensor
+#         Ground truth test labels.
+#     output_test: torch.Tensor
+#         The predicted test labels.
+
+#     """
+#     tr_loss = 0
+#     tr_mse = 0
+#     x_train, y_train = Variable(train_x), Variable(train_y)
+#     x_test, y_test = Variable(test_x), Variable(test_y)
+
+#     # Filters before the fully-connected layer
+#     size_inter = int(np.sqrt(model.fully_connected_input/model.n_filters))
+#     inter_filter = np.zeros((x_train.size()[0], model.n_filters, size_inter, size_inter))
+#     if model.mode != 'full':
+#         inter_filter = np.zeros((x_train.size()[0], 1, model.input_shape, model.input_shape))
+#     permutation = torch.randperm(x_train.size()[0])
+
+#     for i in range(0, x_train.size()[0], batch_size):
+#         indices = permutation[i:i+batch_size]
+#         batch_x, batch_y = x_train[indices], y_train[indices]
+
+#         # Training output
+#         output_train, inter_filters = model(batch_x)
+
+#         # Picking the appropriate filters before the fully-connected layer
+#         inter_filters_detached = inter_filters.detach().clone()
+#         inter_filter[i:i+batch_size] = inter_filters_detached.numpy()
+
+#         # Training loss, clearing gradients and updating weights
+#         optimiser.zero_grad()
+#         l1_loss = model.l1_regularization_loss()
+#         mse_loss = criterion(output_train[:, 0], batch_y[:, 0])
+#         loss_train = mse_loss + l1_loss
+#         if verbose:
+#             print(l1_loss)
+#         loss_train.backward()
+#         optimiser.step()
+#         # Adding batch contribution to training loss
+#         tr_loss += loss_train.item() * batch_size / x_train.size()[0]
+#         tr_mse += mse_loss * batch_size / x_train.size()[0]
+
+#     train_losses.append(tr_loss)
+#     loss_test = 0
+#     output_test = []
+
+#     with torch.no_grad():
+#         for i in range(x_test.size()[0]):
+#             optimiser.zero_grad()
+#             output_t, _ = model(x_test[i].reshape(1, 1, model.input_shape, model.input_shape))
+#             l1_loss = model.l1_regularization_loss()
+#             loss_t = criterion(output_t[:, 0], y_test[i][:, 0])
+#             loss_test += loss_t.item() / x_test.size()[0]
+#             if verbose:
+#                 print(output_t)
+#                 print(y_test[i])
+#                 print('------------------------')
+#             output_test.append(output_t[:,0].detach().numpy())
+#     test_losses.append(loss_test)
+
+#     # Training and test losses
+#     if verbose:
+#         print('Epoch : ', epoch+1, '\t', 'train loss: ', tr_loss, 'train MSE: ', tr_mse, 'test MSE: ', loss_test)
+
+
+#     return train_losses, test_losses, inter_filter, y_test, output_test
+
+# def training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=120, max_corr=0.87, batch_size=32, verbose=True):
+#     r"""Performs a chosen number of training steps.
+
+#     Parameters
+#     ----------
+#     model: antipasti.model.model.ANTIPASTI
+#         The model class, i.e., ``ANTIPASTI``.
+#     criterion: torch.nn.modules.loss.MSELoss
+#         It calculates a gradient according to a selected loss function, i.e., ``MSELoss``.
+#     optimiser: adabelief_pytorch.AdaBelief.AdaBelief
+#         Method that implements an optimisation algorithm.
+#     train_x: torch.Tensor
+#         Training normal mode correlation maps.
+#     test_x: torch.Tensor
+#         Test normal mode correlation maps.
+#     train_y: torch.Tensor
+#         Training labels.
+#     test_y: torch.Tensor
+#         Test labels.
+#     n_max_epochs: int
+#         Number of times the whole dataset goes through the model.
+#     max_corr: float
+#         If the correlation coefficient exceeds this value, the training routine is terminated.
+#     batch_size: int
+#         Number of samples that pass through the model before its parameters are updated.
+#     verbose: bool
+#         ``True`` to print the losses in each epoch.
+
+#     Returns
+#     -------
+#     train_losses: list
+#         The history of training losses after the training routine.
+#     test_losses: list
+#         The history of test losses after the training routine.
+#     inter_filter: torch.Tensor
+#         Filters before the fully-connected layer.
+#     y_test: torch.Tensor
+#         Ground truth test labels.
+#     output_test: torch.Tensor
+#         The predicted test labels.
+
+#     """
+#     train_losses = []
+#     test_losses = []
+
+#     for epoch in range(n_max_epochs):
+#         train_losses, test_losses, inter_filter, y_test, output_test = training_step(model, criterion, optimiser, train_x, test_x, train_y, test_y, train_losses, test_losses, epoch, batch_size, verbose)
+
+#         # Computing and printing the correlation coefficient
+#         corr = np.corrcoef(np.array(output_test).T, y_test[:,0].detach().numpy().T)[1,0]
+#         if verbose:
+#             print('Corr: ' + str(corr))
+#         if corr > max_corr:
+#             break
+
+#     return train_losses, test_losses, inter_filter, y_test, output_test
+
+# def plot_cnn(output_test, y_test):
+#     font_size = 14
+#     title_size = 20
+
+
+#     fig = plt.figure(figsize=(10, 8))
+#     plt.scatter(np.array(output_test), y_test[:,0].detach().numpy())
+#     corr = np.corrcoef(np.array(output_test).T, y_test[:,0].detach().numpy().T)[1,0]
+#     plt.plot([-11,-4],[-11,-4], c='r', linestyle='dashed')
+#     plt.title('R = '+str(corr), size=title_size)
+#     plt.xlabel('Predicted $log_{10}$($K_d$)', size=font_size)
+#     plt.ylabel('True $log_{10}$($K_d$)', size=font_size)
+#     # plt.show()
+
+#     # Save the plot to a file
+#     plt.savefig('training_performance.png')
+#     plt.close()  # Close the figure to free up memory
 
 def main():
     # Get the current working directory
@@ -1002,46 +1002,46 @@ def main():
 
     train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.05)
 
-    # loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
+    loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
 
-    # plot_vim(loss_values, correlation_values, num_epochs)
-
-
-    n_filters = 4
-    filter_size = 4
-    pooling_size = 2
-    learning_rate = 1e-4
-    input_shape = train_x.shape[-1]
-
-    # Defining the model, optimiser and loss function
-    model = ANTIPASTI(n_filters=n_filters, filter_size=filter_size, pooling_size=pooling_size, input_shape=input_shape, l1_lambda=0.002)
-    criterion = MSELoss()
-    optimiser = AdaBelief(model.parameters(), lr=learning_rate, weight_decay=False, eps=1e-8, print_change_log=False)
-    # optimiser = Adam(model.parameters(), lr=learning_rate)
-    print(model)
-
-    train_losses = []
-    test_losses = []
-
-    model.train()
-    n_max_epochs = 50 # This is just a super short example. You can increase this.
-    max_corr = 0.87
-    batch_size = 32
-
-    start_time = time.time()  # Start timing the training process
-    train_loss, test_loss, inter_filter, y_test, output_test = training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=n_max_epochs, max_corr=max_corr, batch_size=batch_size)
-    end_time = time.time()  # End timing the training process
-
-    # Calculate and print the total training time
-    total_training_time = end_time - start_time
-    print(f'Total Training Time: {total_training_time:.2f} seconds')
+    plot_vim(loss_values, correlation_values, num_epochs)
 
 
-    # Saving the losses
-    train_losses.extend(train_loss)
-    test_losses.extend(test_loss)
+    # n_filters = 4
+    # filter_size = 4
+    # pooling_size = 2
+    # learning_rate = 1e-4
+    # input_shape = train_x.shape[-1]
 
-    plot_cnn(output_test, y_test)
+    # # Defining the model, optimiser and loss function
+    # model = ANTIPASTI(n_filters=n_filters, filter_size=filter_size, pooling_size=pooling_size, input_shape=input_shape, l1_lambda=0.002)
+    # criterion = MSELoss()
+    # optimiser = AdaBelief(model.parameters(), lr=learning_rate, weight_decay=False, eps=1e-8, print_change_log=False)
+    # # optimiser = Adam(model.parameters(), lr=learning_rate)
+    # print(model)
+
+    # train_losses = []
+    # test_losses = []
+
+    # model.train()
+    # n_max_epochs = 50 # This is just a super short example. You can increase this.
+    # max_corr = 0.87
+    # batch_size = 32
+
+    # start_time = time.time()  # Start timing the training process
+    # train_loss, test_loss, inter_filter, y_test, output_test = training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=n_max_epochs, max_corr=max_corr, batch_size=batch_size)
+    # end_time = time.time()  # End timing the training process
+
+    # # Calculate and print the total training time
+    # total_training_time = end_time - start_time
+    # print(f'Total Training Time: {total_training_time:.2f} seconds')
+
+
+    # # Saving the losses
+    # train_losses.extend(train_loss)
+    # test_losses.extend(test_loss)
+
+    # plot_cnn(output_test, y_test)
 
 
 if __name__ == '__main__':
