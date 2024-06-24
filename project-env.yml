@@ -9,3 +9,6 @@ dependencies:
   - requests>=2.28.2
   - pip:
     - biopython>=1.79
+    - vision-mamba
+    - torch
+    - matplotlib
