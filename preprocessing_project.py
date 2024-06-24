@@ -528,9 +528,17 @@ def load_training_images(dccm_map_path, selected_entries, pathological, entries,
 
     assert labels == [item for item in selected_entries if item not in pathological]
 
+    # for pdb in selected_entries:
+    #     if pdb not in pathological and affinity_entries_only:
+    #         assert np.float16(10**kds[[item for item in selected_entries if item not in pathological].index(pdb)] == np.float16(df[df['pdb']==pdb]['affinity'])).all()
+
     for pdb in selected_entries:
         if pdb not in pathological and affinity_entries_only:
-            assert np.float16(10**kds[[item for item in selected_entries if item not in pathological].index(pdb)] == np.float16(df[df['pdb']==pdb]['affinity'])).all()
+            idx = [item for item in selected_entries if item not in pathological].index(pdb)
+            calculated_kd = np.float32(10**kds[idx])
+            actual_kd = np.float32(df[df['pdb'] == pdb]['affinity'].values[0])
+            assert np.isclose(calculated_kd, actual_kd, atol=1e-5), f"Mismatch in KD values for {pdb}: calculated {calculated_kd}, actual {actual_kd}"
+
 
     return np.array(imgs), np.array(kds), labels, raw_imgs
 
