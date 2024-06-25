@@ -734,7 +734,7 @@ def objective(trial, train_x, train_y):
     d_state = trial.suggest_int('d_state', 64, 128)
     depth = trial.suggest_int('depth', 4, 8)
     dropout = trial.suggest_float('dropout', 0.1, 0.3)
-    learning_rate = trial.suggest_loguniform('learning_rate', 1e-3, 1e-4)
+    learning_rate = trial.suggest_loguniform('learning_rate', 1e-4, 1e-3)
     # weight_decay = trial.suggest_loguniform('weight_decay', 1e-6, 1e-2)
 
     # Initialize the Vim model
