@@ -27,6 +27,7 @@ import json
 from sklearn.model_selection import GridSearchCV
 
 import optuna
+import gc
 
 
 def clean_df(df_path, pathological, affinity_entries_only=True):
@@ -731,9 +732,9 @@ def objective(trial, train_x, train_y):
     dim = trial.suggest_int('dim', 64, 128)
     dim_inner = trial.suggest_int('dim_inner', 64, 128)
     d_state = trial.suggest_int('d_state', 64, 128)
-    depth = trial.suggest_int('depth', 8, 12)
-    dropout = trial.suggest_float('dropout', 0.2, 0.4)
-    learning_rate = trial.suggest_loguniform('learning_rate', 1e-1, 1e-2)
+    depth = trial.suggest_int('depth', 4, 8)
+    dropout = trial.suggest_float('dropout', 0.1, 0.3)
+    learning_rate = trial.suggest_loguniform('learning_rate', 1e-3, 1e-4)
     # weight_decay = trial.suggest_loguniform('weight_decay', 1e-6, 1e-2)
 
     # Initialize the Vim model
@@ -799,6 +800,11 @@ def objective(trial, train_x, train_y):
             # Accumulate loss
             total_loss += loss.item()
             num_batches += 1
+
+            # # Clear cache to reduce memory usage
+            # del batch_inputs, batch_targets, outputs, loss
+            # torch.cuda.empty_cache()
+            # gc.collect()
 
     # Calculate average loss for the last epoch
     average_loss = total_loss / num_batches
