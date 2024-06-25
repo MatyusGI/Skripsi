@@ -22,6 +22,10 @@ import time
 from torch.nn import Linear, ReLU, Conv2d, MaxPool2d, Module
 from torch.autograd import Variable
 
+from sklearn.base import BaseEstimator, RegressorMixin
+import json
+from sklearn.model_selection import GridSearchCV
+
 
 def clean_df(df_path, pathological, affinity_entries_only=True):
     """
@@ -590,134 +594,205 @@ def create_test_set(train_x, train_y, test_size=None, random_state=0):
     return train_x, test_x, train_y, test_y, indices_train, indices_test
 
 
-def training_vim(train_x, train_y):
-    # Check if GPU is available
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# def training_vim(train_x, train_y):
+#     # Check if GPU is available
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Assuming train_x and train_y are your input arrays
-    train_x_t = torch.tensor(train_x, dtype=torch.float32).to(device)
-    train_y_t = torch.tensor(train_y, dtype=torch.float32).to(device)
+#     # Assuming train_x and train_y are your input arrays
+#     train_x_t = torch.tensor(train_x, dtype=torch.float32).to(device)
+#     train_y_t = torch.tensor(train_y, dtype=torch.float32).to(device)
 
-    # Create a TensorDataset and DataLoader
-    dataset = TensorDataset(train_x_t, train_y_t)
-    train_loader = DataLoader(dataset, batch_size=2, shuffle=True)
+#     # Create a TensorDataset and DataLoader
+#     dataset = TensorDataset(train_x_t, train_y_t)
+#     train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
 
-    # Initialize the Vim model
-    model = Vim(
-        dim=256,
-        # heads=8,
-        dt_rank=32,
-        dim_inner=256,
-        d_state=256,
-        num_classes=1,  # For regression, typically the output is a single value per instance
-        image_size=286,
-        patch_size=13,
-        channels=1,
-        dropout=0.5,
-        depth=12,
-    )
+#     # Initialize the Vim model
+#     model = Vim(
+#         dim=256,
+#         # heads=8,
+#         dt_rank=32,
+#         dim_inner=256,
+#         d_state=256,
+#         num_classes=1,  # For regression, typically the output is a single value per instance
+#         image_size=286,
+#         patch_size=13,
+#         channels=1,
+#         dropout=0.5,
+#         depth=12,
+#     )
 
-    # Move the model to the GPU
-    model.to(device)
+#     # Move the model to the GPU
+#     model.to(device)
 
-    # Using Mean Squared Error Loss for a regression task
-    criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+#     # Using Mean Squared Error Loss for a regression task
+#     criterion = MSELoss()
+#     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-    # Training loop
-    model.train()  # Set the model to training mode
-    num_epochs = 50  # Define the number of epochs
-    verbose = True  # Set verbose to True to print correlation
+#     # Training loop
+#     model.train()  # Set the model to training mode
+#     num_epochs = 50  # Define the number of epochs
+#     verbose = True  # Set verbose to True to print correlation
 
-    # Initialize lists to store the loss and correlation values for each epoch
-    loss_values = []
-    correlation_values = []
+#     # Initialize lists to store the loss and correlation values for each epoch
+#     loss_values = []
+#     correlation_values = []
 
-    # Record the start time
-    start_time = time.time()
+#     # Record the start time
+#     start_time = time.time()
 
-    for epoch in range(num_epochs):
-        total_loss = 0.0
-        num_batches = 0
-        outputs_all = []
-        targets_all = []
+#     for epoch in range(num_epochs):
+#         total_loss = 0.0
+#         num_batches = 0
+#         outputs_all = []
+#         targets_all = []
 
-        for batch_inputs, batch_targets in train_loader:
-            # Move the inputs and targets to the GPU
-            batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
+#         for batch_inputs, batch_targets in train_loader:
+#             # Move the inputs and targets to the GPU
+#             batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
 
-            optimizer.zero_grad()  # Zero the parameter gradients
+#             optimizer.zero_grad()  # Zero the parameter gradients
 
-            # Forward pass
-            outputs = model(batch_inputs)
-            loss = criterion(outputs, batch_targets)
+#             # Forward pass
+#             outputs = model(batch_inputs)
+#             loss = criterion(outputs, batch_targets)
 
-            # Backward pass and optimize
-            loss.backward()
-            optimizer.step()
+#             # Backward pass and optimize
+#             loss.backward()
+#             optimizer.step()
 
-            # Accumulate loss
-            total_loss += loss.item()
-            num_batches += 1
+#             # Accumulate loss
+#             total_loss += loss.item()
+#             num_batches += 1
 
-            # Debugging shapes
-            print("Output shape:", outputs.shape)
-            print("Target shape:", batch_targets.shape)
+#             # Debugging shapes
+#             print("Output shape:", outputs.shape)
+#             print("Target shape:", batch_targets.shape)
 
-            # Collect outputs and targets for correlation, ensure they are flattened
-            outputs_all.append(outputs.view(-1).detach().cpu().numpy())
-            targets_all.append(batch_targets.view(-1).detach().cpu().numpy())
+#             # Collect outputs and targets for correlation, ensure they are flattened
+#             outputs_all.append(outputs.view(-1).detach().cpu().numpy())
+#             targets_all.append(batch_targets.view(-1).detach().cpu().numpy())
 
-        # Calculate average loss for the epoch
-        average_loss = total_loss / num_batches
-        print(f'Epoch {epoch + 1}: Average Loss {average_loss:.4f}')
+#         # Calculate average loss for the epoch
+#         average_loss = total_loss / num_batches
+#         print(f'Epoch {epoch + 1}: Average Loss {average_loss:.4f}')
 
-        # Compute correlation
-        outputs_flat = np.concatenate(outputs_all)
-        targets_flat = np.concatenate(targets_all)
-        corr = np.corrcoef(outputs_flat, targets_flat)[0, 1]
-        if verbose:
-            print('Epoch {}: Correlation: {:.4f}'.format(epoch + 1, corr))
+#         # Compute correlation
+#         outputs_flat = np.concatenate(outputs_all)
+#         targets_flat = np.concatenate(targets_all)
+#         corr = np.corrcoef(outputs_flat, targets_flat)[0, 1]
+#         if verbose:
+#             print('Epoch {}: Correlation: {:.4f}'.format(epoch + 1, corr))
 
-        # Append loss and correlation values to the lists
-        loss_values.append(average_loss)
-        correlation_values.append(corr)
+#         # Append loss and correlation values to the lists
+#         loss_values.append(average_loss)
+#         correlation_values.append(corr)
 
-    # Record the end time
-    end_time = time.time()
+#     # Record the end time
+#     end_time = time.time()
 
-    # Calculate and print the total training time
-    total_training_time = end_time - start_time
-    print(f'Total Training Time: {total_training_time:.2f} seconds')
+#     # Calculate and print the total training time
+#     total_training_time = end_time - start_time
+#     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
-    return loss_values, correlation_values, num_epochs
+#     return loss_values, correlation_values, num_epochs
 
 
-def plot_vim(loss_values, correlation_values, num_epochs):
-    # Plotting loss and correlation
-    plt.figure(figsize=(12, 5))
+# def plot_vim(loss_values, correlation_values, num_epochs):
+#     # Plotting loss and correlation
+#     plt.figure(figsize=(12, 5))
 
-    # Plot loss
-    plt.subplot(1, 2, 1)
-    plt.plot(range(1, num_epochs + 1), loss_values, label='Loss')
-    plt.title('Training Loss over Epochs')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend()
+#     # Plot loss
+#     plt.subplot(1, 2, 1)
+#     plt.plot(range(1, num_epochs + 1), loss_values, label='Loss')
+#     plt.title('Training Loss over Epochs')
+#     plt.xlabel('Epoch')
+#     plt.ylabel('Loss')
+#     plt.legend()
 
-    # Plot correlation
-    plt.subplot(1, 2, 2)
-    plt.plot(range(1, num_epochs + 1), correlation_values, label='Correlation', color='orange')
-    plt.title('Correlation over Epochs')
-    plt.xlabel('Epoch')
-    plt.ylabel('Correlation')
-    plt.legend()
+#     # Plot correlation
+#     plt.subplot(1, 2, 2)
+#     plt.plot(range(1, num_epochs + 1), correlation_values, label='Correlation', color='orange')
+#     plt.title('Correlation over Epochs')
+#     plt.xlabel('Epoch')
+#     plt.ylabel('Correlation')
+#     plt.legend()
 
-    # plt.show()
+#     # plt.show()
 
-    # Save the plot to a file
-    plt.savefig('training_performance.png')
-    plt.close()  # Close the figure to free up memory
+#     # Save the plot to a file
+#     plt.savefig('training_performance.png')
+#     plt.close()  # Close the figure to free up memory
+
+
+class PyTorchRegressor(BaseEstimator, RegressorMixin):
+    def __init__(self, dim=128, dim_inner=128, d_state=128, depth=12, dropout=0.1, lr=0.001, weight_decay=1e-2):
+        self.dim = dim
+        self.dim_inner = dim_inner
+        self.d_state = d_state
+        self.depth = depth
+        self.dropout = dropout
+        self.lr = lr
+        self.weight_decay = weight_decay
+        self.model = None
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    def fit(self, X, y):
+        # Initialize the model
+        self.model = Vim(
+            dim=self.dim,
+            dim_inner=self.dim_inner,
+            d_state=self.d_state,
+            dt_rank=32,
+            num_classes=1,  # For regression, typically the output is a single value per instance
+            image_size=286,
+            patch_size=13,
+            channels=1,
+            dropout=self.dropout,
+            depth=self.depth,
+        ).to(self.device)
+
+        # Convert data to tensors
+        train_x_t = torch.tensor(X, dtype=torch.float32).to(self.device)
+        train_y_t = torch.tensor(y, dtype=torch.float32).to(self.device)
+
+        # Create DataLoader
+        dataset = TensorDataset(train_x_t, train_y_t)
+        train_loader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)
+
+        # Define loss and optimizer
+        criterion = MSELoss()
+        optimizer = optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+
+        # Training loop
+        num_epochs = 50
+        self.model.train()
+        for epoch in range(num_epochs):
+            total_loss = 0.0
+            for batch_inputs, batch_targets in train_loader:
+                optimizer.zero_grad()
+                outputs = self.model(batch_inputs)
+                loss = criterion(outputs, batch_targets)
+                loss.backward()
+                optimizer.step()
+                total_loss += loss.item()
+            print(f"Epoch {epoch+1}/{num_epochs}, Loss: {total_loss/len(train_loader)}")
+
+        return self
+
+    def predict(self, X):
+        self.model.eval()
+        with torch.no_grad():
+            inputs = torch.tensor(X, dtype=torch.float32).to(self.device)
+            outputs = self.model(inputs)
+        return outputs.cpu().numpy()
+
+    def save_model(self, file_path):
+        torch.save(self.model.state_dict(), file_path)
+
+    def save_model_architecture(self, file_path):
+        with open(file_path, 'w') as f:
+            print(self.model, file=f)
+
 
 
 
@@ -984,29 +1059,74 @@ def main():
     file_residues_paths = sorted(glob.glob(os.path.join(residues_path, '*.npy')))
     chain_lengths_path = os.path.join(current_dir, 'notebooks', 'test_data', 'chain_lengths')
     
+    # Data to exclude
     pathological = ['5omm', '5i5k', '1uwx', '1mj7', '1qfw', '1qyg', '4ffz', '3ifl', '3lrh', '3pp4', '3ru8', '3t0w', '3t0x', '4fqr', '4gxu', '4jfx', '4k3h', '4jfz', '4jg0', '4jg1', '4jn2', '4o4y', '4qxt', '4r3s', '4w6y', '4w6y', '5ies', '5ivn', '5j57', '5kvd', '5kzp', '5mes', '5nmv', '5sy8', '5t29', '5t5b', '5vag', '3etb', '3gkz', '3uze', '3uzq', '4f9l', '4gqp', '4r2g', '5c6t', '3fku', '1oau', '1oay']
     scfv = ['4gqp', '3etb', '3gkz', '3uze', '3uzq', '3gm0', '4f9l', '6ejg', '6ejm', '1h8s', '5dfw', '6cbp', '4f9p', '5kov', '1dzb', '5j74', '5aaw', '3uzv', '5aam', '3ux9', '5a2j', '5a2k', '5a2i', '3fku', '5yy4', '3uyp', '5jyl', '1y0l', '1p4b', '3kdm', '4lar', '4ffy', '2ybr', '1mfa', '5xj3', '5xj4', '4kv5', '5vyf']
     pathological += scfv
 
+    # Clean the dataframe
     entries, affinity, df = clean_df(df_path, pathological)
 
+    # Generate the maps
     # generate_maps(entries, structures_path, residues_path, dccm_map_path, scripts_path, cmaps=False)
 
+    # Initialise the heavy and light chains
     heavy, light, selected_entries = initialisation(entries, structures_path, dccm_map_path, scripts_path, residues_path,
                                                     chain_lengths_path)
 
     max_res_list_h, max_res_list_l, min_res_list_h, min_res_list_l = get_max_min_chains(file_residues_paths, selected_entries, heavy, light)
 
+    # Load the training images
     train_x, train_y, labels, raw_imgs = load_training_images(dccm_map_path, selected_entries, pathological, entries, affinity, df,
                                                             file_residues_paths, max_res_list_h, max_res_list_l, heavy, light)
 
+    # Create the test set
     train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.05)
 
-    loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
-
-    plot_vim(loss_values, correlation_values, num_epochs)
 
 
+    # # Training VIM with fix parameters
+    # loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
+
+    # plot_vim(loss_values, correlation_values, num_epochs)
+
+
+
+    # VIM Grid search for the best hyperparameters
+    param_grid = {
+        'dim': [64, 128],
+        'dim_inner': [64, 128],
+        'd_state': [64, 128],
+        'depth': [4, 6, 12],
+        'dropout': [0.1, 0.3, 0.4],
+        'lr': [1e-4, 1e-3, 1e-2],
+        # 'weight_decay': [1e-4, 1e-2]
+    }
+
+    estimator = PyTorchRegressor()
+    grid_search = GridSearchCV(estimator, param_grid, cv=3, scoring='neg_mean_squared_error', verbose=2)
+    grid_search.fit(train_x, train_y)
+
+    # Get the best hyperparameters
+    best_params = grid_search.best_params_
+    print("Best hyperparameters:", best_params)
+
+    # Save the best hyperparameters to a JSON file
+    with open('best_hyperparameters.json', 'w') as f:
+        json.dump(best_params, f, indent=4)
+    print("Best hyperparameters saved to best_hyperparameters.json")
+
+    # Save the model architecture and the best model
+    best_model = grid_search.best_estimator_.model
+    grid_search.best_estimator_.save_model_architecture('best_model_architecture.txt')
+    grid_search.best_estimator_.save_model('best_model.pth')
+
+    print("Model architecture saved to best_model_architecture.txt")
+    print("Best model saved to best_model.pth")
+
+
+
+    # # Training CNN with fix parameters
     # n_filters = 4
     # filter_size = 4
     # pooling_size = 2
@@ -1035,7 +1155,6 @@ def main():
     # # Calculate and print the total training time
     # total_training_time = end_time - start_time
     # print(f'Total Training Time: {total_training_time:.2f} seconds')
-
 
     # # Saving the losses
     # train_losses.extend(train_loss)
