@@ -1109,7 +1109,7 @@ def main():
     # Hyperparameter search using optuna
     # Running the hyperparameter search
     study = optuna.create_study(direction='minimize')
-    study.optimize(objective, n_trials=50, train_x=train_x, train_y=train_y)  # Number of trials
+    study.optimize(objective(train_x, train_y), n_trials=50)  # Number of trials
 
     # Get the best hyperparameters
     best_params = study.best_params
