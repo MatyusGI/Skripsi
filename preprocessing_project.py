@@ -26,7 +26,6 @@ from sklearn.base import BaseEstimator, RegressorMixin
 import json
 from sklearn.model_selection import GridSearchCV
 
-from apex import amp  # For mixed precision training
 import optuna
 
 
@@ -769,7 +768,7 @@ def objective(trial):
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # Mixed precision training
-    model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
+    scaler = torch.cuda.amp.GradScaler()
 
     # Training loop
     model.train()  # Set the model to training mode
@@ -787,14 +786,15 @@ def objective(trial):
 
             optimizer.zero_grad()  # Zero the parameter gradients
 
-            # Forward pass
-            outputs = model(batch_inputs)
-            loss = criterion(outputs, batch_targets)
+            with torch.cuda.amp.autocast():
+                # Forward pass
+                outputs = model(batch_inputs)
+                loss = criterion(outputs, batch_targets)
 
             # Backward pass and optimize
-            with amp.scale_loss(loss, optimizer) as scaled_loss:
-                scaled_loss.backward()
-            optimizer.step()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             # Accumulate loss
             total_loss += loss.item()
