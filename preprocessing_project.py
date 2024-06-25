@@ -600,7 +600,7 @@ def training_vim(train_x, train_y):
 
     # Create a TensorDataset and DataLoader
     dataset = TensorDataset(train_x_t, train_y_t)
-    train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
+    train_loader = DataLoader(dataset, batch_size=2, shuffle=True)
 
     # Initialize the Vim model
     model = Vim(
@@ -613,7 +613,7 @@ def training_vim(train_x, train_y):
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.1,
+        dropout=0.5,
         depth=12,
     )
 
