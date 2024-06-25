@@ -726,7 +726,7 @@ def create_test_set(train_x, train_y, test_size=None, random_state=0):
 #     plt.close()  # Close the figure to free up memory
 
 
-def objective(trial):
+def objective(trial, train_x, train_y):
     # Define the hyperparameters to tune
     dim = trial.suggest_int('dim', 64, 256)
     dim_inner = trial.suggest_int('dim_inner', 64, 256)
@@ -1109,7 +1109,7 @@ def main():
     # Hyperparameter search using optuna
     # Running the hyperparameter search
     study = optuna.create_study(direction='minimize')
-    study.optimize(objective, n_trials=50)  # Number of trials
+    study.optimize(objective, n_trials=50, train_x=train_x, train_y=train_y)  # Number of trials
 
     # Get the best hyperparameters
     best_params = study.best_params
