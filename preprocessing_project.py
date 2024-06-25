@@ -757,7 +757,7 @@ class PyTorchRegressor(BaseEstimator, RegressorMixin):
 
         # Create DataLoader
         dataset = TensorDataset(train_x_t, train_y_t)
-        train_loader = DataLoader(dataset, batch_size=16, shuffle=True, num_workers=0)
+        train_loader = DataLoader(dataset, batch_size=16, shuffle=True, num_workers=1)
 
         # Define loss and optimizer
         criterion = MSELoss()
@@ -1098,8 +1098,8 @@ def main():
         'dim_inner': [64, 128],
         'd_state': [64, 128],
         'depth': [4, 6, 12],
-        'dropout': [0.1, 0.3, 0.4],
-        'lr': [1e-4, 1e-3, 1e-2],
+        'dropout': [0.3, 0.4],
+        'lr': [1e-3, 1e-2],
         # 'weight_decay': [1e-4, 1e-2]
     }
 
