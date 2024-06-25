@@ -26,6 +26,9 @@ from sklearn.base import BaseEstimator, RegressorMixin
 import json
 from sklearn.model_selection import GridSearchCV
 
+from apex import amp  # For mixed precision training
+import optuna
+
 
 def clean_df(df_path, pathological, affinity_entries_only=True):
     """
@@ -724,74 +727,82 @@ def create_test_set(train_x, train_y, test_size=None, random_state=0):
 #     plt.close()  # Close the figure to free up memory
 
 
-class PyTorchRegressor(BaseEstimator, RegressorMixin):
-    def __init__(self, dim=128, dim_inner=128, d_state=128, depth=12, dropout=0.1, lr=0.001, weight_decay=1e-2):
-        self.dim = dim
-        self.dim_inner = dim_inner
-        self.d_state = d_state
-        self.depth = depth
-        self.dropout = dropout
-        self.lr = lr
-        self.weight_decay = weight_decay
-        self.model = None
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def objective(trial):
+    # Define the hyperparameters to tune
+    dim = trial.suggest_int('dim', 64, 256)
+    dim_inner = trial.suggest_int('dim_inner', 64, 256)
+    d_state = trial.suggest_int('d_state', 64, 256)
+    depth = trial.suggest_int('depth', 4, 12)
+    dropout = trial.suggest_float('dropout', 0.1, 0.5)
+    learning_rate = trial.suggest_loguniform('learning_rate', 1e-5, 1e-2)
+    weight_decay = trial.suggest_loguniform('weight_decay', 1e-6, 1e-2)
 
-    def fit(self, X, y):
-        # Initialize the model
-        self.model = Vim(
-            dim=self.dim,
-            dim_inner=self.dim_inner,
-            d_state=self.d_state,
-            dt_rank=32,
-            num_classes=1,  # For regression, typically the output is a single value per instance
-            image_size=286,
-            patch_size=13,
-            channels=1,
-            dropout=self.dropout,
-            depth=self.depth,
-        ).to(self.device)
+    # Initialize the Vim model
+    model = Vim(
+        dim=dim,
+        # heads=8,
+        dt_rank=32,
+        dim_inner=dim_inner,
+        d_state=d_state,
+        num_classes=1,  # For regression, typically the output is a single value per instance
+        image_size=286,
+        patch_size=13,
+        channels=1,
+        dropout=dropout,
+        depth=depth,
+    )
 
-        # Convert data to tensors
-        train_x_t = torch.tensor(X, dtype=torch.float32).to(self.device)
-        train_y_t = torch.tensor(y, dtype=torch.float32).to(self.device)
+    # Check if GPU is available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
 
-        # Create DataLoader
-        dataset = TensorDataset(train_x_t, train_y_t)
-        train_loader = DataLoader(dataset, batch_size=16, shuffle=True, num_workers=0)
+    # Assuming train_x and train_y are your input arrays
+    train_x_t = torch.tensor(train_x, dtype=torch.float32).to(device)
+    train_y_t = torch.tensor(train_y, dtype=torch.float32).to(device)
 
-        # Define loss and optimizer
-        criterion = MSELoss()
-        optimizer = optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+    # Create a TensorDataset and DataLoader
+    dataset = TensorDataset(train_x_t, train_y_t)
+    train_loader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=4)
 
-        # Training loop
-        num_epochs = 50
-        self.model.train()
-        for epoch in range(num_epochs):
-            total_loss = 0.0
-            for batch_inputs, batch_targets in train_loader:
-                optimizer.zero_grad()
-                outputs = self.model(batch_inputs)
-                loss = criterion(outputs, batch_targets)
-                loss.backward()
-                optimizer.step()
-                total_loss += loss.item()
-            print(f"Epoch {epoch+1}/{num_epochs}, Loss: {total_loss/len(train_loader)}")
+    # Using Mean Squared Error Loss for a regression task
+    criterion = MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-        return self
+    # Mixed precision training
+    model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
 
-    def predict(self, X):
-        self.model.eval()
-        with torch.no_grad():
-            inputs = torch.tensor(X, dtype=torch.float32).to(self.device)
-            outputs = self.model(inputs)
-        return outputs.cpu().numpy()
+    # Training loop
+    model.train()  # Set the model to training mode
+    num_epochs = 10  # Reduce the number of epochs for faster hyperparameter search
 
-    def save_model(self, file_path):
-        torch.save(self.model.state_dict(), file_path)
+    total_loss = 0.0
+    num_batches = 0
+    outputs_all = []
+    targets_all = []
 
-    def save_model_architecture(self, file_path):
-        with open(file_path, 'w') as f:
-            print(self.model, file=f)
+    for epoch in range(num_epochs):
+        for batch_inputs, batch_targets in train_loader:
+            # Move the inputs and targets to the GPU
+            batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
+
+            optimizer.zero_grad()  # Zero the parameter gradients
+
+            # Forward pass
+            outputs = model(batch_inputs)
+            loss = criterion(outputs, batch_targets)
+
+            # Backward pass and optimize
+            with amp.scale_loss(loss, optimizer) as scaled_loss:
+                scaled_loss.backward()
+            optimizer.step()
+
+            # Accumulate loss
+            total_loss += loss.item()
+            num_batches += 1
+
+    # Calculate average loss for the last epoch
+    average_loss = total_loss / num_batches
+    return average_loss
 
 
 
@@ -1094,37 +1105,51 @@ def main():
     # Set CUDA_LAUNCH_BLOCKING to help with debugging
     os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
-    # VIM Grid search for the best hyperparameters
-    param_grid = {
-        'dim': [64, 128],
-        'dim_inner': [64, 128],
-        'd_state': [64, 128],
-        'depth': [6, 12],
-        'dropout': [0.3, 0.4],
-        'lr': [1e-3, 1e-2],
-        # 'weight_decay': [1e-4, 1e-2]
-    }
 
-    estimator = PyTorchRegressor()
-    grid_search = GridSearchCV(estimator, param_grid, cv=3, scoring='neg_mean_squared_error', verbose=2, error_score='raise')
-    grid_search.fit(train_x, train_y)
+    # Hyperparameter search using optuna
+    # Running the hyperparameter search
+    study = optuna.create_study(direction='minimize')
+    study.optimize(objective, n_trials=50)  # Number of trials
 
     # Get the best hyperparameters
-    best_params = grid_search.best_params_
+    best_params = study.best_params
     print("Best hyperparameters:", best_params)
 
     # Save the best hyperparameters to a JSON file
     with open('best_hyperparameters.json', 'w') as f:
         json.dump(best_params, f, indent=4)
+
     print("Best hyperparameters saved to best_hyperparameters.json")
 
-    # Save the model architecture and the best model
-    best_model = grid_search.best_estimator_.model
-    grid_search.best_estimator_.save_model_architecture('best_model_architecture.txt')
-    grid_search.best_estimator_.save_model('best_model.pth')
+    # Initialize the best model
+    best_model = Vim(
+        dim=best_params['dim'],
+        # heads=8,
+        dt_rank=32,
+        dim_inner=best_params['dim_inner'],
+        d_state=best_params['d_state'],
+        num_classes=1,  # For regression, typically the output is a single value per instance
+        image_size=286,
+        patch_size=13,
+        channels=1,
+        dropout=best_params['dropout'],
+        depth=best_params['depth'],
+    )
 
-    print("Model architecture saved to best_model_architecture.txt")
-    print("Best model saved to best_model.pth")
+    # Print model architecture to a file
+    model_architecture_file = 'model_architecture.txt'
+    with open(model_architecture_file, 'w') as f:
+        print(best_model, file=f)
+
+    print(f"Model architecture saved to {model_architecture_file}")
+
+    # Train the best model (use the objective function or similar training code)
+    # Assuming you have trained the best model here
+
+    # Save the best model
+    model_save_path = 'best_model.pth'
+    torch.save(best_model.state_dict(), model_save_path)
+    print(f"Best model saved to {model_save_path}")
 
 
 
