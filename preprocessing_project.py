@@ -757,7 +757,7 @@ class PyTorchRegressor(BaseEstimator, RegressorMixin):
 
         # Create DataLoader
         dataset = TensorDataset(train_x_t, train_y_t)
-        train_loader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)
+        train_loader = DataLoader(dataset, batch_size=16, shuffle=True, num_workers=0)
 
         # Define loss and optimizer
         criterion = MSELoss()
@@ -1104,7 +1104,7 @@ def main():
     }
 
     estimator = PyTorchRegressor()
-    grid_search = GridSearchCV(estimator, param_grid, cv=3, scoring='neg_mean_squared_error', verbose=2)
+    grid_search = GridSearchCV(estimator, param_grid, cv=3, scoring='neg_mean_squared_error', verbose=2, error_score='raise')
     grid_search.fit(train_x, train_y)
 
     # Get the best hyperparameters
