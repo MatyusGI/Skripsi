@@ -765,7 +765,7 @@ def objective(trial, train_x, train_y):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=None)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # Mixed precision training
     scaler = torch.cuda.amp.GradScaler()
