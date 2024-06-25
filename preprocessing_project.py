@@ -728,13 +728,13 @@ def create_test_set(train_x, train_y, test_size=None, random_state=0):
 
 def objective(trial, train_x, train_y):
     # Define the hyperparameters to tune
-    dim = trial.suggest_int('dim', 64, 256)
-    dim_inner = trial.suggest_int('dim_inner', 64, 256)
-    d_state = trial.suggest_int('d_state', 64, 256)
-    depth = trial.suggest_int('depth', 4, 12)
-    dropout = trial.suggest_float('dropout', 0.1, 0.5)
-    learning_rate = trial.suggest_loguniform('learning_rate', 1e-5, 1e-2)
-    weight_decay = trial.suggest_loguniform('weight_decay', 1e-6, 1e-2)
+    dim = trial.suggest_int('dim', 64, 128)
+    dim_inner = trial.suggest_int('dim_inner', 64, 128)
+    d_state = trial.suggest_int('d_state', 64, 128)
+    depth = trial.suggest_int('depth', 8, 12)
+    dropout = trial.suggest_float('dropout', 0.2, 0.4)
+    learning_rate = trial.suggest_loguniform('learning_rate', 1e-3, 1e-2)
+    # weight_decay = trial.suggest_loguniform('weight_decay', 1e-6, 1e-2)
 
     # Initialize the Vim model
     model = Vim(
@@ -765,7 +765,7 @@ def objective(trial, train_x, train_y):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=None)
 
     # Mixed precision training
     scaler = torch.cuda.amp.GradScaler()
@@ -1109,7 +1109,7 @@ def main():
     # Hyperparameter search using optuna
     # Running the hyperparameter search
     study = optuna.create_study(direction='minimize')
-    study.optimize(lambda trial: objective(trial, train_x, train_y), n_trials=50)  # Number of trials
+    study.optimize(lambda trial: objective(trial, train_x, train_y), n_trials=30)  # Number of trials
 
     # Get the best hyperparameters
     best_params = study.best_params
