@@ -607,7 +607,7 @@ def training_vim(train_x, train_y):
 
     # Create a TensorDataset and DataLoader
     dataset = TensorDataset(train_x_t, train_y_t)
-    train_loader = DataLoader(dataset, batch_size=2, shuffle=True)
+    train_loader = DataLoader(dataset, batch_size=3, shuffle=True)
 
     # Initialize the Vim model
     model = Vim(
@@ -633,7 +633,7 @@ def training_vim(train_x, train_y):
 
     # Training loop
     model.train()  # Set the model to training mode
-    num_epochs = 50  # Define the number of epochs
+    num_epochs = 100  # Define the number of epochs
     verbose = True  # Set verbose to True to print correlation
 
     # Initialize lists to store the loss and correlation values for each epoch
