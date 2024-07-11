@@ -614,7 +614,7 @@ def training_vim(train_x, train_y):
         dim=128,
         # heads=8,
         dt_rank=32,
-        dim_inner=113,
+        dim_inner=128,
         d_state=97,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
