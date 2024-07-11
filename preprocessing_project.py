@@ -762,7 +762,7 @@ def objective(trial, train_x, train_y):
 
     # Create a TensorDataset and DataLoader
     dataset = TensorDataset(train_x_t, train_y_t)
-    train_loader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=4)
+    train_loader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=0)
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
@@ -1104,7 +1104,7 @@ def main():
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
-    os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+    # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 
     # Hyperparameter search using optuna
