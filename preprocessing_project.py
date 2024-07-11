@@ -597,164 +597,9 @@ def create_test_set(train_x, train_y, test_size=None, random_state=0):
     return train_x, test_x, train_y, test_y, indices_train, indices_test
 
 
-def training_vim(train_x, train_y):
-    # Check if GPU is available
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    # Assuming train_x and train_y are your input arrays
-    train_x_t = torch.tensor(train_x, dtype=torch.float32).to(device)
-    train_y_t = torch.tensor(train_y, dtype=torch.float32).to(device)
-
-    # Create a TensorDataset and DataLoader
-    dataset = TensorDataset(train_x_t, train_y_t)
-    train_loader = DataLoader(dataset, batch_size=3, shuffle=True)
-
-    # Initialize the Vim model
-    model = Vim(
-        dim=128,
-        # heads=8,
-        dt_rank=32,
-        dim_inner=128,
-        d_state=128,
-        num_classes=1,  # For regression, typically the output is a single value per instance
-        image_size=286,
-        patch_size=13,
-        channels=1,
-        dropout=0.5,
-        depth=8,
-    )
-
-    # Move the model to the GPU
-    model.to(device)
-
-    # Using Mean Squared Error Loss for a regression task
-    criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-
-    # Training loop
-    model.train()  # Set the model to training mode
-    num_epochs = 100  # Define the number of epochs
-    verbose = True  # Set verbose to True to print correlation
-
-    # Initialize lists to store the loss and correlation values for each epoch
-    loss_values = []
-    correlation_values = []
-
-    # Record the start time
-    start_time = time.time()
-
-    for epoch in range(num_epochs):
-        total_loss = 0.0
-        num_batches = 0
-        outputs_all = []
-        targets_all = []
-
-        for batch_inputs, batch_targets in train_loader:
-            # Move the inputs and targets to the GPU
-            batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
-
-            optimizer.zero_grad()  # Zero the parameter gradients
-
-            # Forward pass
-            outputs = model(batch_inputs)
-            loss = criterion(outputs, batch_targets)
-
-            # Backward pass and optimize
-            loss.backward()
-            optimizer.step()
-
-            # Accumulate loss
-            total_loss += loss.item()
-            num_batches += 1
-
-            # Debugging shapes
-            print("Output shape:", outputs.shape)
-            print("Target shape:", batch_targets.shape)
-
-            # Collect outputs and targets for correlation, ensure they are flattened
-            outputs_all.append(outputs.view(-1).detach().cpu().numpy())
-            targets_all.append(batch_targets.view(-1).detach().cpu().numpy())
-
-        # Calculate average loss for the epoch
-        average_loss = total_loss / num_batches
-        print(f'Epoch {epoch + 1}: Average Loss {average_loss:.4f}')
-
-        # Compute correlation
-        outputs_flat = np.concatenate(outputs_all)
-        targets_flat = np.concatenate(targets_all)
-        corr = np.corrcoef(outputs_flat, targets_flat)[0, 1]
-        if verbose:
-            print('Epoch {}: Correlation: {:.4f}'.format(epoch + 1, corr))
-
-        # Append loss and correlation values to the lists
-        loss_values.append(average_loss)
-        correlation_values.append(corr)
-
-    # Record the end time
-    end_time = time.time()
-
-    # Calculate and print the total training time
-    total_training_time = end_time - start_time
-    print(f'Total Training Time: {total_training_time:.2f} seconds')
-
-    return loss_values, correlation_values, num_epochs
-
-
-def plot_vim(loss_values, correlation_values, num_epochs):
-    # Plotting loss and correlation
-    plt.figure(figsize=(12, 5))
-
-    # Plot loss
-    plt.subplot(1, 2, 1)
-    plt.plot(range(1, num_epochs + 1), loss_values, label='Loss')
-    plt.title('Training Loss over Epochs')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend()
-
-    # Plot correlation
-    plt.subplot(1, 2, 2)
-    plt.plot(range(1, num_epochs + 1), correlation_values, label='Correlation', color='orange')
-    plt.title('Correlation over Epochs')
-    plt.xlabel('Epoch')
-    plt.ylabel('Correlation')
-    plt.legend()
-
-    # plt.show()
-
-    # Save the plot to a file
-    plt.savefig('training_performance.png')
-    plt.close()  # Close the figure to free up memory
-
-
-# def objective(trial, train_x, train_y):
-#     # Define the hyperparameters to tune
-#     dim = trial.suggest_int('dim', 64, 128)
-#     dim_inner = trial.suggest_int('dim_inner', 64, 128)
-#     d_state = trial.suggest_int('d_state', 64, 128)
-#     depth = trial.suggest_int('depth', 4, 8)
-#     dropout = trial.suggest_float('dropout', 0.1, 0.3)
-#     learning_rate = trial.suggest_loguniform('learning_rate', 1e-4, 1e-3)
-#     # weight_decay = trial.suggest_loguniform('weight_decay', 1e-6, 1e-2)
-
-#     # Initialize the Vim model
-#     model = Vim(
-#         dim=dim,
-#         # heads=8,
-#         dt_rank=32,
-#         dim_inner=dim_inner,
-#         d_state=d_state,
-#         num_classes=1,  # For regression, typically the output is a single value per instance
-#         image_size=286,
-#         patch_size=13,
-#         channels=1,
-#         dropout=dropout,
-#         depth=depth,
-#     )
-
+# def training_vim(train_x, train_y):
 #     # Check if GPU is available
 #     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#     model.to(device)
 
 #     # Assuming train_x and train_y are your input arrays
 #     train_x_t = torch.tensor(train_x, dtype=torch.float32).to(device)
@@ -762,49 +607,204 @@ def plot_vim(loss_values, correlation_values, num_epochs):
 
 #     # Create a TensorDataset and DataLoader
 #     dataset = TensorDataset(train_x_t, train_y_t)
-#     train_loader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=4)
+#     train_loader = DataLoader(dataset, batch_size=3, shuffle=True)
+
+#     # Initialize the Vim model
+#     model = Vim(
+#         dim=128,
+#         # heads=8,
+#         dt_rank=32,
+#         dim_inner=128,
+#         d_state=128,
+#         num_classes=1,  # For regression, typically the output is a single value per instance
+#         image_size=286,
+#         patch_size=13,
+#         channels=1,
+#         dropout=0.5,
+#         depth=8,
+#     )
+
+#     # Move the model to the GPU
+#     model.to(device)
 
 #     # Using Mean Squared Error Loss for a regression task
 #     criterion = MSELoss()
-#     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-
-#     # Mixed precision training
-#     scaler = torch.cuda.amp.GradScaler()
+#     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 #     # Training loop
 #     model.train()  # Set the model to training mode
-#     num_epochs = 10  # Reduce the number of epochs for faster hyperparameter search
+#     num_epochs = 100  # Define the number of epochs
+#     verbose = True  # Set verbose to True to print correlation
 
-#     total_loss = 0.0
-#     num_batches = 0
-#     outputs_all = []
-#     targets_all = []
+#     # Initialize lists to store the loss and correlation values for each epoch
+#     loss_values = []
+#     correlation_values = []
+
+#     # Record the start time
+#     start_time = time.time()
 
 #     for epoch in range(num_epochs):
+#         total_loss = 0.0
+#         num_batches = 0
+#         outputs_all = []
+#         targets_all = []
+
 #         for batch_inputs, batch_targets in train_loader:
 #             # Move the inputs and targets to the GPU
 #             batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
 
 #             optimizer.zero_grad()  # Zero the parameter gradients
 
-#             with torch.cuda.amp.autocast():
-#                 # Forward pass
-#                 outputs = model(batch_inputs)
-#                 loss = criterion(outputs, batch_targets)
+#             # Forward pass
+#             outputs = model(batch_inputs)
+#             loss = criterion(outputs, batch_targets)
 
 #             # Backward pass and optimize
-#             scaler.scale(loss).backward()
-#             scaler.step(optimizer)
-#             scaler.update()
+#             loss.backward()
+#             optimizer.step()
 
 #             # Accumulate loss
 #             total_loss += loss.item()
 #             num_batches += 1
 
+#             # Debugging shapes
+#             print("Output shape:", outputs.shape)
+#             print("Target shape:", batch_targets.shape)
 
-#     # Calculate average loss for the last epoch
-#     average_loss = total_loss / num_batches
-#     return average_loss
+#             # Collect outputs and targets for correlation, ensure they are flattened
+#             outputs_all.append(outputs.view(-1).detach().cpu().numpy())
+#             targets_all.append(batch_targets.view(-1).detach().cpu().numpy())
+
+#         # Calculate average loss for the epoch
+#         average_loss = total_loss / num_batches
+#         print(f'Epoch {epoch + 1}: Average Loss {average_loss:.4f}')
+
+#         # Compute correlation
+#         outputs_flat = np.concatenate(outputs_all)
+#         targets_flat = np.concatenate(targets_all)
+#         corr = np.corrcoef(outputs_flat, targets_flat)[0, 1]
+#         if verbose:
+#             print('Epoch {}: Correlation: {:.4f}'.format(epoch + 1, corr))
+
+#         # Append loss and correlation values to the lists
+#         loss_values.append(average_loss)
+#         correlation_values.append(corr)
+
+#     # Record the end time
+#     end_time = time.time()
+
+#     # Calculate and print the total training time
+#     total_training_time = end_time - start_time
+#     print(f'Total Training Time: {total_training_time:.2f} seconds')
+
+#     return loss_values, correlation_values, num_epochs
+
+
+# def plot_vim(loss_values, correlation_values, num_epochs):
+#     # Plotting loss and correlation
+#     plt.figure(figsize=(12, 5))
+
+#     # Plot loss
+#     plt.subplot(1, 2, 1)
+#     plt.plot(range(1, num_epochs + 1), loss_values, label='Loss')
+#     plt.title('Training Loss over Epochs')
+#     plt.xlabel('Epoch')
+#     plt.ylabel('Loss')
+#     plt.legend()
+
+#     # Plot correlation
+#     plt.subplot(1, 2, 2)
+#     plt.plot(range(1, num_epochs + 1), correlation_values, label='Correlation', color='orange')
+#     plt.title('Correlation over Epochs')
+#     plt.xlabel('Epoch')
+#     plt.ylabel('Correlation')
+#     plt.legend()
+
+#     # plt.show()
+
+#     # Save the plot to a file
+#     plt.savefig('training_performance.png')
+#     plt.close()  # Close the figure to free up memory
+
+
+def objective(trial, train_x, train_y):
+    # Define the hyperparameters to tune
+    dim = trial.suggest_int('dim', 64, 128)
+    dim_inner = trial.suggest_int('dim_inner', 64, 128)
+    d_state = trial.suggest_int('d_state', 64, 128)
+    depth = trial.suggest_int('depth', 4, 8)
+    dropout = trial.suggest_float('dropout', 0.1, 0.3)
+    learning_rate = trial.suggest_loguniform('learning_rate', 1e-4, 1e-3)
+    # weight_decay = trial.suggest_loguniform('weight_decay', 1e-6, 1e-2)
+
+    # Initialize the Vim model
+    model = Vim(
+        dim=dim,
+        # heads=8,
+        dt_rank=32,
+        dim_inner=dim,
+        d_state=dim,
+        num_classes=1,  # For regression, typically the output is a single value per instance
+        image_size=286,
+        patch_size=13,
+        channels=1,
+        dropout=dropout,
+        depth=depth,
+    )
+
+    # Check if GPU is available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+
+    # Assuming train_x and train_y are your input arrays
+    train_x_t = torch.tensor(train_x, dtype=torch.float32).to(device)
+    train_y_t = torch.tensor(train_y, dtype=torch.float32).to(device)
+
+    # Create a TensorDataset and DataLoader
+    dataset = TensorDataset(train_x_t, train_y_t)
+    train_loader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=4)
+
+    # Using Mean Squared Error Loss for a regression task
+    criterion = MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+    # Mixed precision training
+    scaler = torch.cuda.amp.GradScaler()
+
+    # Training loop
+    model.train()  # Set the model to training mode
+    num_epochs = 10  # Reduce the number of epochs for faster hyperparameter search
+
+    total_loss = 0.0
+    num_batches = 0
+    outputs_all = []
+    targets_all = []
+
+    for epoch in range(num_epochs):
+        for batch_inputs, batch_targets in train_loader:
+            # Move the inputs and targets to the GPU
+            batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
+
+            optimizer.zero_grad()  # Zero the parameter gradients
+
+            with torch.cuda.amp.autocast():
+                # Forward pass
+                outputs = model(batch_inputs)
+                loss = criterion(outputs, batch_targets)
+
+            # Backward pass and optimize
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+
+            # Accumulate loss
+            total_loss += loss.item()
+            num_batches += 1
+
+
+    # Calculate average loss for the last epoch
+    average_loss = total_loss / num_batches
+    return average_loss
 
 
 
@@ -1098,59 +1098,59 @@ def main():
 
 
     # Training VIM with fix parameters
-    loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
+    # loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
 
-    plot_vim(loss_values, correlation_values, num_epochs)
+    # plot_vim(loss_values, correlation_values, num_epochs)
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 
-    # # Hyperparameter search using optuna
-    # # Running the hyperparameter search
-    # study = optuna.create_study(direction='minimize')
-    # study.optimize(lambda trial: objective(trial, train_x, train_y), n_trials=30)  # Number of trials
+    # Hyperparameter search using optuna
+    # Running the hyperparameter search
+    study = optuna.create_study(direction='minimize')
+    study.optimize(lambda trial: objective(trial, train_x, train_y), n_trials=30)  # Number of trials
 
-    # # Get the best hyperparameters
-    # best_params = study.best_params
-    # print("Best hyperparameters:", best_params)
+    # Get the best hyperparameters
+    best_params = study.best_params
+    print("Best hyperparameters:", best_params)
 
-    # # Save the best hyperparameters to a JSON file
-    # with open('best_hyperparameters.json', 'w') as f:
-    #     json.dump(best_params, f, indent=4)
+    # Save the best hyperparameters to a JSON file
+    with open('best_hyperparameters.json', 'w') as f:
+        json.dump(best_params, f, indent=4)
 
-    # print("Best hyperparameters saved to best_hyperparameters.json")
+    print("Best hyperparameters saved to best_hyperparameters.json")
 
-    # # Initialize the best model
-    # best_model = Vim(
-    #     dim=best_params['dim'],
-    #     # heads=8,
-    #     dt_rank=32,
-    #     dim_inner=best_params['dim_inner'],
-    #     d_state=best_params['d_state'],
-    #     num_classes=1,  # For regression, typically the output is a single value per instance
-    #     image_size=286,
-    #     patch_size=13,
-    #     channels=1,
-    #     dropout=best_params['dropout'],
-    #     depth=best_params['depth'],
-    # )
+    # Initialize the best model
+    best_model = Vim(
+        dim=best_params['dim'],
+        # heads=8,
+        dt_rank=32,
+        dim_inner=best_params['dim_inner'],
+        d_state=best_params['d_state'],
+        num_classes=1,  # For regression, typically the output is a single value per instance
+        image_size=286,
+        patch_size=13,
+        channels=1,
+        dropout=best_params['dropout'],
+        depth=best_params['depth'],
+    )
 
-    # # Print model architecture to a file
-    # model_architecture_file = 'model_architecture.txt'
-    # with open(model_architecture_file, 'w') as f:
-    #     print(best_model, file=f)
+    # Print model architecture to a file
+    model_architecture_file = 'model_architecture.txt'
+    with open(model_architecture_file, 'w') as f:
+        print(best_model, file=f)
 
-    # print(f"Model architecture saved to {model_architecture_file}")
+    print(f"Model architecture saved to {model_architecture_file}")
 
-    # # Train the best model (use the objective function or similar training code)
-    # # Assuming you have trained the best model here
+    # Train the best model (use the objective function or similar training code)
+    # Assuming you have trained the best model here
 
-    # # Save the best model
-    # model_save_path = 'best_model.pth'
-    # torch.save(best_model.state_dict(), model_save_path)
-    # print(f"Best model saved to {model_save_path}")
+    # Save the best model
+    model_save_path = 'best_model.pth'
+    torch.save(best_model.state_dict(), model_save_path)
+    print(f"Best model saved to {model_save_path}")
 
 
 
