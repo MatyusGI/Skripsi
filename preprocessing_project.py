@@ -1104,7 +1104,7 @@ def main():
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
-    # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+    os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 
     # Hyperparameter search using optuna
