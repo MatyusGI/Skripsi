@@ -1042,7 +1042,7 @@ def training_routine(model, criterion, optimiser, train_x, test_x, train_y, test
 
     return train_losses, test_losses, inter_filter, y_test, output_test
 
-def plot__r_cnn(output_test, y_test):
+def plot_r_cnn(output_test, y_test):
     font_size = 14
     title_size = 20
 
