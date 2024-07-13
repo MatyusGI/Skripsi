@@ -633,7 +633,7 @@ def training_vim(train_x, train_y):
 
     # Training loop
     model.train()  # Set the model to training mode
-    num_epochs = 100  # Define the number of epochs
+    num_epochs = 150  # Define the number of epochs
     verbose = True  # Set verbose to True to print correlation
 
     # Initialize lists to store the loss and correlation values for each epoch
@@ -1117,7 +1117,7 @@ def main():
     # Training VIM with fix parameters
     loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
 
-    plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_100_epoch')
+    plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_150_epoch')
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
