@@ -727,6 +727,7 @@ def plot_vim(loss_values, correlation_values, num_epochs, name):
     plt.close()  # Close the figure to free up memory
 
 
+# Hyperparameter search
 # def objective(trial, train_x, train_y):
 #     # Define the hyperparameters to tune
 #     dim = trial.suggest_int('dim', 64, 128)
@@ -806,6 +807,181 @@ def plot_vim(loss_values, correlation_values, num_epochs, name):
 #     average_loss = total_loss / num_batches
 #     return average_loss
 
+
+def training_vim_test(train_x, train_y, test_x, test_y):
+    # Check if GPU is available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Convert input arrays to tensors
+    train_x_t = torch.tensor(train_x, dtype=torch.float32).to(device)
+    train_y_t = torch.tensor(train_y, dtype=torch.float32).to(device)
+    test_x_t = torch.tensor(test_x, dtype=torch.float32).to(device)
+    test_y_t = torch.tensor(test_y, dtype=torch.float32).to(device)
+
+    # Create TensorDataset and DataLoader for training and validation datasets
+    train_dataset = TensorDataset(train_x_t, train_y_t)
+    test_dataset = TensorDataset(test_x_t, test_y_t)
+
+    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+
+    # Initialize the Vim model
+    model = Vim(
+        dim=128,
+        dt_rank=32,
+        dim_inner=128,
+        d_state=97,
+        num_classes=1,
+        image_size=286,
+        patch_size=13,
+        channels=1,
+        dropout=0.26773,
+        depth=7,
+    )
+
+    # Move the model to the GPU
+    model.to(device)
+
+    # Using Mean Squared Error Loss for a regression task
+    criterion = MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.000153341)
+
+    # Training loop
+    model.train()
+    num_epochs = 10
+    verbose = True
+
+    # Initialize lists to store the loss and correlation values for each epoch
+    train_loss_values = []
+    train_correlation_values = []
+    val_loss_values = []
+    val_correlation_values = []
+
+    # Record the start time
+    start_time = time.time()
+
+    for epoch in range(num_epochs):
+        model.train()  # Set the model to training mode
+        total_train_loss = 0.0
+        num_train_batches = 0
+        train_outputs_all = []
+        train_targets_all = []
+
+        for batch_inputs, batch_targets in train_loader:
+            batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
+
+            optimizer.zero_grad()
+
+            # Forward pass
+            outputs = model(batch_inputs)
+            loss = criterion(outputs, batch_targets)
+
+            # Backward pass and optimize
+            loss.backward()
+            optimizer.step()
+
+            # Accumulate loss
+            total_train_loss += loss.item()
+            num_train_batches += 1
+
+            # Collect outputs and targets for correlation
+            train_outputs_all.append(outputs.view(-1).detach().cpu().numpy())
+            train_targets_all.append(batch_targets.view(-1).detach().cpu().numpy())
+
+        # Calculate average training loss for the epoch
+        average_train_loss = total_train_loss / num_train_batches
+        print(f'Epoch {epoch + 1}: Average Training Loss {average_train_loss:.4f}')
+
+        # Compute training correlation
+        train_outputs_flat = np.concatenate(train_outputs_all)
+        train_targets_flat = np.concatenate(train_targets_all)
+        train_corr = np.corrcoef(train_outputs_flat, train_targets_flat)[0, 1]
+        if verbose:
+            print(f'Epoch {epoch + 1}: Training Correlation: {train_corr:.4f}')
+
+        # Append training loss and correlation values to the lists
+        train_loss_values.append(average_train_loss)
+        train_correlation_values.append(train_corr)
+
+        # Validation phase
+        model.eval()  # Set the model to evaluation mode
+        total_val_loss = 0.0
+        num_val_batches = 0
+        val_outputs_all = []
+        val_targets_all = []
+
+        with torch.no_grad():
+            for val_inputs, val_targets in test_loader:
+                val_inputs, val_targets = val_inputs.to(device), val_targets.to(device)
+
+                # Forward pass
+                val_outputs = model(val_inputs)
+                val_loss = criterion(val_outputs, val_targets)
+
+                # Accumulate loss
+                total_val_loss += val_loss.item()
+                num_val_batches += 1
+
+                # Collect outputs and targets for correlation
+                val_outputs_all.append(val_outputs.view(-1).cpu().numpy())
+                val_targets_all.append(val_targets.view(-1).cpu().numpy())
+
+        # Calculate average validation loss for the epoch
+        average_val_loss = total_val_loss / num_val_batches
+        print(f'Epoch {epoch + 1}: Average Validation Loss {average_val_loss:.4f}')
+
+        # Compute validation correlation
+        val_outputs_flat = np.concatenate(val_outputs_all)
+        val_targets_flat = np.concatenate(val_targets_all)
+        val_corr = np.corrcoef(val_outputs_flat, val_targets_flat)[0, 1]
+        if verbose:
+            print(f'Epoch {epoch + 1}: Validation Correlation: {val_corr:.4f}')
+
+        # Append validation loss and correlation values to the lists
+        val_loss_values.append(average_val_loss)
+        val_correlation_values.append(val_corr)
+
+    # Record the end time
+    end_time = time.time()
+
+    # Calculate and print the total training time
+    total_training_time = end_time - start_time
+    print(f'Total Training Time: {total_training_time:.2f} seconds')
+
+    return {
+        "train_loss_values": train_loss_values,
+        "train_correlation_values": train_correlation_values,
+        "val_loss_values": val_loss_values,
+        "val_correlation_values": val_correlation_values,
+        "num_epochs": num_epochs,
+    }
+
+
+def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, name):
+    # Plotting loss and correlation
+    plt.figure(figsize=(15, 10))
+
+    # Plot training and validation loss
+    plt.subplot(2, 1, 1)
+    plt.plot(range(1, num_epochs + 1), loss_values_train, label='Training Loss')
+    plt.plot(range(1, num_epochs + 1), loss_values_val, label='Validation Loss')
+    plt.title('Loss over Epochs', size=20)
+    plt.xlabel('Epoch', size=14)
+    plt.ylabel('Loss', size=14)
+    plt.legend(prop={'size': 14})
+
+    # Plot training and validation correlation
+    plt.subplot(2, 1, 2)
+    plt.plot(range(1, num_epochs + 1), correlation_values_train, label='Training Correlation', color='blue')
+    plt.plot(range(1, num_epochs + 1), correlation_values_val, label='Validation Correlation', color='orange')
+    plt.title('Correlation over Epochs', size=20)
+    plt.xlabel('Epoch', size=14)
+    plt.ylabel('Correlation', size=14)
+    plt.legend(prop={'size': 14})
+
+    # Save the plot to a file
+    plt.savefig(name + '.png')
+    plt.close()  # Close the figure to free up memory
 
 
 
@@ -1119,6 +1295,11 @@ def main():
 
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
+    loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs = training_vim_test(train_x, train_y, test_x, test_y)
+    plot_vim_combined(
+        loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, 
+        'training_performance_with_test'
+    )
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -1171,42 +1352,42 @@ def main():
 
 
 
-    # Training CNN with fix parameters
-    n_filters = 4
-    filter_size = 4
-    pooling_size = 2
-    learning_rate = 1e-4
-    input_shape = train_x.shape[-1]
+    # # Training CNN with fix parameters
+    # n_filters = 4
+    # filter_size = 4
+    # pooling_size = 2
+    # learning_rate = 1e-4
+    # input_shape = train_x.shape[-1]
 
-    # Defining the model, optimiser and loss function
-    model = ANTIPASTI(n_filters=n_filters, filter_size=filter_size, pooling_size=pooling_size, input_shape=input_shape, l1_lambda=0.002)
-    criterion = MSELoss()
-    optimiser = AdaBelief(model.parameters(), lr=learning_rate, weight_decay=False, eps=1e-8, print_change_log=False)
-    # optimiser = Adam(model.parameters(), lr=learning_rate)
-    print(model)
+    # # Defining the model, optimiser and loss function
+    # model = ANTIPASTI(n_filters=n_filters, filter_size=filter_size, pooling_size=pooling_size, input_shape=input_shape, l1_lambda=0.002)
+    # criterion = MSELoss()
+    # optimiser = AdaBelief(model.parameters(), lr=learning_rate, weight_decay=False, eps=1e-8, print_change_log=False)
+    # # optimiser = Adam(model.parameters(), lr=learning_rate)
+    # print(model)
 
-    train_losses = []
-    test_losses = []
+    # train_losses = []
+    # test_losses = []
 
-    model.train()
-    n_max_epochs = 200 # This is just a super short example. You can increase this.
-    max_corr = 0.95
-    batch_size = 32
+    # model.train()
+    # n_max_epochs = 200 # This is just a super short example. You can increase this.
+    # max_corr = 0.95
+    # batch_size = 32
 
-    start_time = time.time()  # Start timing the training process
-    train_loss, test_loss, inter_filter, y_test, output_test = training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=n_max_epochs, max_corr=max_corr, batch_size=batch_size)
-    end_time = time.time()  # End timing the training process
+    # start_time = time.time()  # Start timing the training process
+    # train_loss, test_loss, inter_filter, y_test, output_test = training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=n_max_epochs, max_corr=max_corr, batch_size=batch_size)
+    # end_time = time.time()  # End timing the training process
 
-    # Calculate and print the total training time
-    total_training_time = end_time - start_time
-    print(f'Total Training Time: {total_training_time:.2f} seconds')
+    # # Calculate and print the total training time
+    # total_training_time = end_time - start_time
+    # print(f'Total Training Time: {total_training_time:.2f} seconds')
 
-    # Saving the losses
-    train_losses.extend(train_loss)
-    test_losses.extend(test_loss)
+    # # Saving the losses
+    # train_losses.extend(train_loss)
+    # test_losses.extend(test_loss)
 
-    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch')
-    plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_200_epoch')
+    # plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch')
+    # plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_200_epoch')
 
 
 if __name__ == '__main__':
