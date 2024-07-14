@@ -948,13 +948,8 @@ def training_vim_test(train_x, train_y, test_x, test_y):
     total_training_time = end_time - start_time
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
-    return {
-        train_loss_values,
-        train_correlation_values,
-        val_loss_values,
-        val_correlation_values,
-        num_epochs,
-    }
+    return train_loss_values, train_correlation_values, val_loss_values, val_correlation_values, num_epochs
+    
 
 
 def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, name):
