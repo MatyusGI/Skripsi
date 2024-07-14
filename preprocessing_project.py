@@ -949,11 +949,11 @@ def training_vim_test(train_x, train_y, test_x, test_y):
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
     return {
-        "train_loss_values": train_loss_values,
-        "train_correlation_values": train_correlation_values,
-        "val_loss_values": val_loss_values,
-        "val_correlation_values": val_correlation_values,
-        "num_epochs": num_epochs,
+        train_loss_values,
+        train_correlation_values,
+        val_loss_values,
+        val_correlation_values,
+        num_epochs,
     }
 
 
@@ -1298,7 +1298,7 @@ def main():
     loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs = training_vim_test(train_x, train_y, test_x, test_y)
     plot_vim_combined(
         loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, 
-        'training_performance_with_test'
+        name='training_performance_with_test'
     )
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
