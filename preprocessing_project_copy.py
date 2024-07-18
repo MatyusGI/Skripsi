@@ -844,7 +844,7 @@ def training_vim_test(train_x, train_y, test_x, test_y):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.000153341)
+    optimizer = AdaBelief(model.parameters(), lr=0.000153341, weight_decay=False, eps=1e-8, print_change_log=False)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
 
     # Training loop

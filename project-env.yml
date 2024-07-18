@@ -12,3 +12,4 @@ dependencies:
     - vision-mamba
     - torch
     - matplotlib
+    - adabelief-pytorch>=0.2.1
