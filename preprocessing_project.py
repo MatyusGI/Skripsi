@@ -808,7 +808,7 @@ def plot_vim(loss_values, correlation_values, num_epochs, name):
 #     return average_loss
 
 
-def training_vim_test(train_x, train_y, test_x, test_y):
+def training_vim_test(train_x, train_y, test_x, test_y, accumulation_steps=4, patience=10):
     # Check if GPU is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -846,6 +846,10 @@ def training_vim_test(train_x, train_y, test_x, test_y):
     criterion = MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.000153341)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
+
+    # Early stopping parameters
+    best_val_loss = float('inf')
+    patience_counter = 0
 
     # Training loop
     model.train()
@@ -899,7 +903,7 @@ def training_vim_test(train_x, train_y, test_x, test_y):
         # Compute training correlation
         train_outputs_flat = np.concatenate(train_outputs_all)
         train_targets_flat = np.concatenate(train_targets_all)
-        train_corr = np.corrcoef(train_outputs_flat, train_targets_flat)[0, 1]
+        train_corr = calculate_correlation(train_outputs_flat, train_targets_flat)
         if verbose:
             print(f'Epoch {epoch + 1}: Training Correlation: {train_corr:.4f}')
 
@@ -937,13 +941,23 @@ def training_vim_test(train_x, train_y, test_x, test_y):
         # Compute validation correlation
         val_outputs_flat = np.concatenate(val_outputs_all)
         val_targets_flat = np.concatenate(val_targets_all)
-        val_corr = np.corrcoef(val_outputs_flat, val_targets_flat)[0, 1]
+        val_corr = calculate_correlation(val_outputs_flat, val_targets_flat)
         if verbose:
             print(f'Epoch {epoch + 1}: Validation Correlation: {val_corr:.4f}')
 
         # Append validation loss and correlation values to the lists
         val_loss_values.append(average_val_loss)
         val_correlation_values.append(val_corr)
+
+        # Early stopping check
+        if average_val_loss < best_val_loss:
+            best_val_loss = average_val_loss
+            patience_counter = 0
+        else:
+            patience_counter += 1
+            if patience_counter >= patience:
+                print(f'Early stopping triggered after {epoch + 1} epochs')
+                break
 
     # Record the end time
     end_time = time.time()
@@ -953,7 +967,14 @@ def training_vim_test(train_x, train_y, test_x, test_y):
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
     return train_loss_values, train_correlation_values, val_loss_values, val_correlation_values, num_epochs
+
     
+def calculate_correlation(outputs, targets):
+    outputs = outputs.view(-1).detach().cpu().numpy()
+    targets = targets.view(-1).detach().cpu().numpy()
+    if np.std(outputs) == 0 or np.std(targets) == 0:
+        return 0  # Avoid division by zero
+    return np.corrcoef(outputs, targets)[0, 1]
 
 
 def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, name):
@@ -1286,7 +1307,7 @@ def main():
                                                             file_residues_paths, max_res_list_h, max_res_list_l, heavy, light)
 
     # Create the test set
-    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.05)
+    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.1)
 
 
     # # Training VIM with fix parameters

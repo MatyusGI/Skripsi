@@ -945,6 +945,16 @@ def training_vim_test(train_x, train_y, test_x, test_y):
         val_loss_values.append(average_val_loss)
         val_correlation_values.append(val_corr)
 
+        # Early stopping check
+        if average_val_loss < best_val_loss:
+            best_val_loss = average_val_loss
+            patience_counter = 0
+        else:
+            patience_counter += 1
+            if patience_counter >= patience:
+                print(f'Early stopping triggered after {epoch + 1} epochs')
+                break
+
     # Record the end time
     end_time = time.time()
 
@@ -1297,7 +1307,7 @@ def main():
     loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs = training_vim_test(train_x, train_y, test_x, test_y)
     plot_vim_combined(
         loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, 
-        name='training_performance_with_test'
+        name='training_performance_with_test_adabelief'
     )
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
