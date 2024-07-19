@@ -901,8 +901,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, accumulation_steps=4, pa
         print(f'Epoch {epoch + 1}: Average Training Loss {average_train_loss:.4f}')
 
         # Compute training correlation
-        train_outputs_flat = np.concatenate(train_outputs_all)
-        train_targets_flat = np.concatenate(train_targets_all)
+        train_outputs_flat = torch.cat(train_outputs_all)
+        train_targets_flat = torch.cat(train_targets_all)
         train_corr = calculate_correlation(train_outputs_flat, train_targets_flat)
         if verbose:
             print(f'Epoch {epoch + 1}: Training Correlation: {train_corr:.4f}')
@@ -939,8 +939,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, accumulation_steps=4, pa
         print(f'Epoch {epoch + 1}: Average Validation Loss {average_val_loss:.4f}')
 
         # Compute validation correlation
-        val_outputs_flat = np.concatenate(val_outputs_all)
-        val_targets_flat = np.concatenate(val_targets_all)
+        val_outputs_flat = torch.cat(val_outputs_all)
+        val_targets_flat = torch.cat(val_targets_all)
         val_corr = calculate_correlation(val_outputs_flat, val_targets_flat)
         if verbose:
             print(f'Epoch {epoch + 1}: Validation Correlation: {val_corr:.4f}')
