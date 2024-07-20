@@ -808,7 +808,7 @@ def plot_vim(loss_values, correlation_values, num_epochs, name):
 #     return average_loss
 
 
-def training_vim_test(train_x, train_y, test_x, test_y, accumulation_steps=4, patience=10):
+def training_vim_test(train_x, train_y, test_x, test_y, patience=10):
     # Check if GPU is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -822,8 +822,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, accumulation_steps=4, pa
     train_dataset = TensorDataset(train_x_t, train_y_t)
     test_dataset = TensorDataset(test_x_t, test_y_t)
 
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=12, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=12, shuffle=False)
 
     # Initialize the Vim model
     model = Vim(
@@ -853,7 +853,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, accumulation_steps=4, pa
 
     # Training loop
     model.train()
-    num_epochs = 50
+    num_epochs = 20
     verbose = True
 
     # Initialize lists to store the loss and correlation values for each epoch
@@ -901,8 +901,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, accumulation_steps=4, pa
         print(f'Epoch {epoch + 1}: Average Training Loss {average_train_loss:.4f}')
 
         # Compute training correlation
-        train_outputs_flat = torch.cat(train_outputs_all)
-        train_targets_flat = torch.cat(train_targets_all)
+        train_outputs_flat = np.concatenate(train_outputs_all)
+        train_targets_flat = np.concatenate(train_targets_all)
         train_corr = calculate_correlation(train_outputs_flat, train_targets_flat)
         if verbose:
             print(f'Epoch {epoch + 1}: Training Correlation: {train_corr:.4f}')
@@ -939,8 +939,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, accumulation_steps=4, pa
         print(f'Epoch {epoch + 1}: Average Validation Loss {average_val_loss:.4f}')
 
         # Compute validation correlation
-        val_outputs_flat = torch.cat(val_outputs_all)
-        val_targets_flat = torch.cat(val_targets_all)
+        val_outputs_flat = np.concatenate(val_outputs_all)
+        val_targets_flat = np.concatenate(val_targets_all)
         val_corr = calculate_correlation(val_outputs_flat, val_targets_flat)
         if verbose:
             print(f'Epoch {epoch + 1}: Validation Correlation: {val_corr:.4f}')
@@ -970,8 +970,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, accumulation_steps=4, pa
 
     
 def calculate_correlation(outputs, targets):
-    outputs = outputs.view(-1).detach().cpu().numpy()
-    targets = targets.view(-1).detach().cpu().numpy()
+    # outputs = outputs.detach().cpu().numpy()
+    # targets = targets.detach().cpu().numpy()
     if np.std(outputs) == 0 or np.std(targets) == 0:
         return 0  # Avoid division by zero
     return np.corrcoef(outputs, targets)[0, 1]
@@ -979,10 +979,10 @@ def calculate_correlation(outputs, targets):
 
 def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, name):
     # Plotting loss and correlation
-    plt.figure(figsize=(15, 10))
+    plt.figure(figsize=(12, 5))
 
     # Plot training and validation loss
-    plt.subplot(2, 1, 1)
+    plt.subplot(1, 2, 1)
     plt.plot(range(1, num_epochs + 1), loss_values_train, label='Training Loss')
     plt.plot(range(1, num_epochs + 1), loss_values_val, label='Validation Loss')
     plt.title('Loss over Epochs', size=20)
@@ -991,7 +991,7 @@ def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_tra
     plt.legend(prop={'size': 14})
 
     # Plot training and validation correlation
-    plt.subplot(2, 1, 2)
+    plt.subplot(1, 2, 2)
     plt.plot(range(1, num_epochs + 1), correlation_values_train, label='Training Correlation', color='blue')
     plt.plot(range(1, num_epochs + 1), correlation_values_val, label='Validation Correlation', color='orange')
     plt.title('Correlation over Epochs', size=20)
