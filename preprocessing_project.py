@@ -847,9 +847,9 @@ def training_vim_test(train_x, train_y, test_x, test_y, patience=10):
     optimizer = optim.Adam(model.parameters(), lr=0.000153341)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
 
-    # Early stopping parameters
-    best_val_loss = float('inf')
-    patience_counter = 0
+    # # Early stopping parameters
+    # best_val_loss = float('inf')
+    # patience_counter = 0
 
     # Training loop
     model.train()
@@ -949,15 +949,15 @@ def training_vim_test(train_x, train_y, test_x, test_y, patience=10):
         val_loss_values.append(average_val_loss)
         val_correlation_values.append(val_corr)
 
-        # Early stopping check
-        if average_val_loss < best_val_loss:
-            best_val_loss = average_val_loss
-            patience_counter = 0
-        else:
-            patience_counter += 1
-            if patience_counter >= patience:
-                print(f'Early stopping triggered after {epoch + 1} epochs')
-                break
+        # # Early stopping check
+        # if average_val_loss < best_val_loss:
+        #     best_val_loss = average_val_loss
+        #     patience_counter = 0
+        # else:
+        #     patience_counter += 1
+        #     if patience_counter >= patience:
+        #         print(f'Early stopping triggered after {epoch + 1} epochs')
+        #         break
 
     # Record the end time
     end_time = time.time()
@@ -994,7 +994,7 @@ def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_tra
     plt.subplot(1, 2, 2)
     plt.plot(range(1, num_epochs + 1), correlation_values_train, label='Training Correlation', color='blue')
     plt.plot(range(1, num_epochs + 1), correlation_values_val, label='Validation Correlation', color='orange')
-    plt.title('Correlation over Epochs', size=20)
+    plt.title('Train R = '+str(correlation_values_train[-1]), size=20)
     plt.xlabel('Epoch', size=14)
     plt.ylabel('Correlation', size=14)
     plt.legend(prop={'size': 14})
