@@ -938,8 +938,8 @@ def training_vim_test(train_x, train_y, test_x, test_y):
         val_outputs_flat = np.concatenate(val_outputs_all)
         val_targets_flat = np.concatenate(val_targets_all)
         # val_corr = calculate_correlation(val_outputs_flat, val_targets_flat)
-        if verbose:
-            print(f'Epoch {epoch + 1}: Validation Correlation: {:.4f}')
+        # if verbose:
+        #     print(f'Epoch {epoch + 1}: Validation Correlation: {val_corr:.4f}')
 
         # Append validation loss and correlation values to the lists
         val_loss_values.append(average_val_loss)
