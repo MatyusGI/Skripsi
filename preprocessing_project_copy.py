@@ -963,7 +963,7 @@ def calculate_correlation(outputs, targets):
     return np.corrcoef(outputs, targets)[0, 1]
 
 
-def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, name):
+def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_train, num_epochs, name):
     # Plotting loss and correlation
     plt.figure(figsize=(12, 5))
 
@@ -979,7 +979,7 @@ def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_tra
     # Plot training and validation correlation
     plt.subplot(1, 2, 2)
     plt.plot(range(1, num_epochs + 1), correlation_values_train, label='Training Correlation', color='blue')
-    plt.plot(range(1, num_epochs + 1), correlation_values_val, label='Validation Correlation', color='orange')
+    # plt.plot(range(1, num_epochs + 1), correlation_values_val, label='Validation Correlation', color='orange')
     plt.title('Train R = '+str(correlation_values_train[-1]), size=20)
     plt.xlabel('Epoch', size=14)
     plt.ylabel('Correlation', size=14)
@@ -1301,9 +1301,9 @@ def main():
 
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
-    loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs = training_vim_test(train_x, train_y, test_x, test_y)
+    loss_values_train, loss_values_val, correlation_values_train, num_epochs = training_vim_test(train_x, train_y, test_x, test_y)
     plot_vim_combined(
-        loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, 
+        loss_values_train, loss_values_val, correlation_values_train,, num_epochs, 
         name='training_performance_with_test_adabelief'
     )
 
