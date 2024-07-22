@@ -937,13 +937,13 @@ def training_vim_test(train_x, train_y, test_x, test_y):
         # Compute validation correlation
         val_outputs_flat = np.concatenate(val_outputs_all)
         val_targets_flat = np.concatenate(val_targets_all)
-        val_corr = calculate_correlation(val_outputs_flat, val_targets_flat)
+        # val_corr = calculate_correlation(val_outputs_flat, val_targets_flat)
         if verbose:
-            print(f'Epoch {epoch + 1}: Validation Correlation: {val_corr:.4f}')
+            print(f'Epoch {epoch + 1}: Validation Correlation: {:.4f}')
 
         # Append validation loss and correlation values to the lists
         val_loss_values.append(average_val_loss)
-        val_correlation_values.append(val_corr)
+        # val_correlation_values.append(val_corr)
 
     # Record the end time
     end_time = time.time()
@@ -952,7 +952,7 @@ def training_vim_test(train_x, train_y, test_x, test_y):
     total_training_time = end_time - start_time
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
-    return train_loss_values, train_correlation_values, val_loss_values, val_correlation_values, num_epochs
+    return train_loss_values, train_correlation_values, val_loss_values, num_epochs
 
     
 def calculate_correlation(outputs, targets):
