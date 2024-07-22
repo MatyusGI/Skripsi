@@ -1303,7 +1303,7 @@ def main():
 
     loss_values_train, loss_values_val, correlation_values_train, num_epochs = training_vim_test(train_x, train_y, test_x, test_y)
     plot_vim_combined(
-        loss_values_train, loss_values_val, correlation_values_train,, num_epochs, 
+        loss_values_train, loss_values_val, correlation_values_train, num_epochs, 
         name='training_performance_with_test_adabelief'
     )
 
