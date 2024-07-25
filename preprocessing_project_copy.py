@@ -633,7 +633,7 @@ def training_vim(train_x, train_y):
 
     # Training loop
     model.train()  # Set the model to training mode
-    num_epochs = 200  # Define the number of epochs
+    num_epochs = 50  # Define the number of epochs
     verbose = True  # Set verbose to True to print correlation
 
     # Initialize lists to store the loss and correlation values for each epoch
@@ -715,7 +715,7 @@ def plot_vim(loss_values, correlation_values, num_epochs, name):
     # Plot correlation
     plt.subplot(1, 2, 2)
     plt.plot(range(1, num_epochs + 1), correlation_values, label='Correlation', color='orange')
-    plt.title('Correlation over Epochs')
+    plt.title('R = '+str(correlation_values[-1])')
     plt.xlabel('Epoch')
     plt.ylabel('Correlation')
     plt.legend()
@@ -1296,16 +1296,16 @@ def main():
     train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.05)
 
 
-    # # Training VIM with fix parameters
-    # loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
+    # Training VIM with fix parameters
+    loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
 
-    # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
+    plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_50_epoch')
 
-    loss_values_train, loss_values_val, correlation_values_train, num_epochs = training_vim_test(train_x, train_y, test_x, test_y)
-    plot_vim_combined(
-        loss_values_train, loss_values_val, correlation_values_train, num_epochs, 
-        name='training_performance_with_test_adabelief'
-    )
+    # loss_values_train, loss_values_val, correlation_values_train, num_epochs = training_vim_test(train_x, train_y, test_x, test_y)
+    # plot_vim_combined(
+    #     loss_values_train, loss_values_val, correlation_values_train, num_epochs, 
+    #     name='training_performance_with_test_adabelief'
+    # )
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
