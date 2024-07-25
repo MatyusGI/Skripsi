@@ -726,7 +726,7 @@ def plot_vim(loss_values, correlation_values, num_epochs, name):
     plt.close()  # Close the figure to free up memory
 
 
-Hyperparameter search
+# Hyperparameter search
 def objective(trial, train_x, train_y):
     # Define the hyperparameters to tune
     dim = trial.suggest_int('dim', 64, 128)
