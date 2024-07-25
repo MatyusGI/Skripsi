@@ -907,43 +907,43 @@ def training_vim_test(train_x, train_y, test_x, test_y):
         train_loss_values.append(average_train_loss)
         train_correlation_values.append(train_corr)
 
-        # # Validation phase
-        # model.eval()  # Set the model to evaluation mode
-        # total_val_loss = 0.0
-        # num_val_batches = 0
-        # val_outputs_all = []
-        # val_targets_all = []
+        # Validation phase
+        model.eval()  # Set the model to evaluation mode
+        total_val_loss = 0.0
+        num_val_batches = 0
+        val_outputs_all = []
+        val_targets_all = []
 
-        # with torch.no_grad():
-        #     for val_inputs, val_targets in test_loader:
-        #         val_inputs, val_targets = val_inputs.to(device), val_targets.to(device)
+        with torch.no_grad():
+            for val_inputs, val_targets in test_loader:
+                val_inputs, val_targets = val_inputs.to(device), val_targets.to(device)
 
-        #         # Forward pass
-        #         val_outputs = model(val_inputs)
-        #         val_loss = criterion(val_outputs, val_targets)
+                # Forward pass
+                val_outputs = model(val_inputs)
+                val_loss = criterion(val_outputs, val_targets)
 
-        #         # Accumulate loss
-        #         total_val_loss += val_loss.item()
-        #         num_val_batches += 1
+                # Accumulate loss
+                total_val_loss += val_loss.item()
+                num_val_batches += 1
 
-        #         # Collect outputs and targets for correlation
-        #         val_outputs_all.append(val_outputs.view(-1).cpu().numpy())
-        #         val_targets_all.append(val_targets.view(-1).cpu().numpy())
+                # Collect outputs and targets for correlation
+                val_outputs_all.append(val_outputs.view(-1).cpu().numpy())
+                val_targets_all.append(val_targets.view(-1).cpu().numpy())
 
-        # # Calculate average validation loss for the epoch
-        # average_val_loss = total_val_loss / num_val_batches
-        # print(f'Epoch {epoch + 1}: Average Validation Loss {average_val_loss:.4f}')
+        # Calculate average validation loss for the epoch
+        average_val_loss = total_val_loss / num_val_batches
+        print(f'Epoch {epoch + 1}: Average Validation Loss {average_val_loss:.4f}')
 
-        # # Compute validation correlation
-        # val_outputs_flat = np.concatenate(val_outputs_all)
-        # val_targets_flat = np.concatenate(val_targets_all)
-        # # val_corr = calculate_correlation(val_outputs_flat, val_targets_flat)
-        # # if verbose:
-        # #     print(f'Epoch {epoch + 1}: Validation Correlation: {val_corr:.4f}')
+        # Compute validation correlation
+        val_outputs_flat = np.concatenate(val_outputs_all)
+        val_targets_flat = np.concatenate(val_targets_all)
+        # val_corr = calculate_correlation(val_outputs_flat, val_targets_flat)
+        # if verbose:
+        #     print(f'Epoch {epoch + 1}: Validation Correlation: {val_corr:.4f}')
 
-        # # Append validation loss and correlation values to the lists
-        # val_loss_values.append(average_val_loss)
-        # # val_correlation_values.append(val_corr)
+        # Append validation loss and correlation values to the lists
+        val_loss_values.append(average_val_loss)
+        # val_correlation_values.append(val_corr)
 
     # Record the end time
     end_time = time.time()
