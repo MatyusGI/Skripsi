@@ -715,7 +715,7 @@ def plot_vim(loss_values, correlation_values, num_epochs, name):
     # Plot correlation
     plt.subplot(1, 2, 2)
     plt.plot(range(1, num_epochs + 1), correlation_values, label='Correlation', color='orange')
-    plt.title('R = '+str(correlation_values[-1])')
+    plt.title('R = '+str(correlation_values[-1]))
     plt.xlabel('Epoch')
     plt.ylabel('Correlation')
     plt.legend()
