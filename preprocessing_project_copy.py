@@ -607,12 +607,11 @@ def training_vim(train_x, train_y):
 
     # Create a TensorDataset and DataLoader
     dataset = TensorDataset(train_x_t, train_y_t)
-    train_loader = DataLoader(dataset, batch_size=1, shuffle=True)
+    train_loader = DataLoader(dataset, batch_size=8, shuffle=True)
 
     # Initialize the Vim model
     model = Vim(
         dim=128,
-        # heads=8,
         dt_rank=32,
         dim_inner=128,
         d_state=97,
@@ -633,7 +632,7 @@ def training_vim(train_x, train_y):
 
     # Training loop
     model.train()  # Set the model to training mode
-    num_epochs = 50  # Define the number of epochs
+    num_epochs = 100  # Define the number of epochs
     verbose = True  # Set verbose to True to print correlation
 
     # Initialize lists to store the loss and correlation values for each epoch
@@ -854,31 +853,31 @@ def plot_test_results(outputs, targets, corr, name):
     plt.close()  # Close the figure to free up memory
 
 
-def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_train, num_epochs, name):
-    # Plotting loss and correlation
-    plt.figure(figsize=(12, 5))
+# def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_train, num_epochs, name):
+#     # Plotting loss and correlation
+#     plt.figure(figsize=(12, 5))
 
-    # Plot training and validation loss
-    plt.subplot(1, 2, 1)
-    plt.plot(range(1, num_epochs + 1), loss_values_train, label='Training Loss')
-    plt.plot(range(1, num_epochs + 1), loss_values_val, label='Validation Loss')
-    plt.title('Loss over Epochs', size=20)
-    plt.xlabel('Epoch', size=14)
-    plt.ylabel('Loss', size=14)
-    plt.legend(prop={'size': 14})
+#     # Plot training and validation loss
+#     plt.subplot(1, 2, 1)
+#     plt.plot(range(1, num_epochs + 1), loss_values_train, label='Training Loss')
+#     plt.plot(range(1, num_epochs + 1), loss_values_val, label='Validation Loss')
+#     plt.title('Loss over Epochs', size=20)
+#     plt.xlabel('Epoch', size=14)
+#     plt.ylabel('Loss', size=14)
+#     plt.legend(prop={'size': 14})
 
-    # Plot training and validation correlation
-    plt.subplot(1, 2, 2)
-    plt.plot(range(1, num_epochs + 1), correlation_values_train, label='Training Correlation', color='blue')
-    # plt.plot(range(1, num_epochs + 1), correlation_values_val, label='Validation Correlation', color='orange')
-    plt.title('Train R = '+str(correlation_values_train[-1]), size=20)
-    plt.xlabel('Epoch', size=14)
-    plt.ylabel('Correlation', size=14)
-    plt.legend(prop={'size': 14})
+#     # Plot training and validation correlation
+#     plt.subplot(1, 2, 2)
+#     plt.plot(range(1, num_epochs + 1), correlation_values_train, label='Training Correlation', color='blue')
+#     # plt.plot(range(1, num_epochs + 1), correlation_values_val, label='Validation Correlation', color='orange')
+#     plt.title('Train R = '+str(correlation_values_train[-1]), size=20)
+#     plt.xlabel('Epoch', size=14)
+#     plt.ylabel('Correlation', size=14)
+#     plt.legend(prop={'size': 14})
 
-    # Save the plot to a file
-    plt.savefig(name + '.png')
-    plt.close()  # Close the figure to free up memory
+#     # Save the plot to a file
+#     plt.savefig(name + '.png')
+#     plt.close()  # Close the figure to free up memory
 
 
 
