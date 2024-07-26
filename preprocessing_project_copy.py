@@ -611,16 +611,16 @@ def training_vim(train_x, train_y):
 
     # Initialize the Vim model
     model = Vim(
-        dim=128,
+        dim=122,
         dt_rank=32,
-        dim_inner=128,
-        d_state=97,
+        dim_inner=122,
+        d_state=120,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.26773,
-        depth=7,
+        dropout=0.1,
+        depth=10,
     )
 
     # Move the model to the GPU
@@ -628,7 +628,7 @@ def training_vim(train_x, train_y):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.000153341)
+    optimizer = optim.Adam(model.parameters(), lr=0.0002169)
 
     # Training loop
     model.train()  # Set the model to training mode
@@ -838,13 +838,17 @@ def test_vim(model, test_x, test_y):
     return mse, corr, outputs_flat, targets_flat
 
 
-def plot_test_results(outputs, targets, corr, name):
+def plot_test_results(outputs, targets, corr, mse, name):
     plt.figure(figsize=(10, 6))
     plt.scatter(targets, outputs, alpha=0.5)
     plt.plot([targets.min(), targets.max()], [targets.min(), targets.max()], 'k--', lw=2)
     plt.xlabel('True Values')
     plt.ylabel('Predicted Values')
     plt.title('R = '+str(corr))
+
+    # Add MSE annotation
+    plt.text(0.05, 0.95, f'MSE = {mse:.2f}', transform=plt.gca().transAxes,
+             fontsize=12, verticalalignment='top')
     
     # Save the plot to a file
     plt.savefig(name + '.png')
@@ -1189,60 +1193,60 @@ def main():
 
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_50_epoch')
 
-    # model, loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
-    # test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_50_epoch')
-    # plot_test_results(outputs_flat, targets_flat, test_corr, name='test_performace_vim_50_epoch')
+    model, loss_values, correlation_values, num_epochs = training_vim(train_x, train_y)
+    test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
+    plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_50_epoch_1')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_50_epoch_1')
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 
-    # Hyperparameter search using optuna
-    # Running the hyperparameter search
-    study = optuna.create_study(direction='minimize')
-    study.optimize(lambda trial: objective(trial, train_x, train_y), n_trials=30)  # Number of trials
+    # # Hyperparameter search using optuna
+    # # Running the hyperparameter search
+    # study = optuna.create_study(direction='minimize')
+    # study.optimize(lambda trial: objective(trial, train_x, train_y), n_trials=30)  # Number of trials
 
-    # Get the best hyperparameters
-    best_params = study.best_params
-    print("Best hyperparameters:", best_params)
+    # # Get the best hyperparameters
+    # best_params = study.best_params
+    # print("Best hyperparameters:", best_params)
 
-    # Save the best hyperparameters to a JSON file
-    with open('best_hyperparameters.json', 'w') as f:
-        json.dump(best_params, f, indent=4)
+    # # Save the best hyperparameters to a JSON file
+    # with open('best_hyperparameters.json', 'w') as f:
+    #     json.dump(best_params, f, indent=4)
 
-    print("Best hyperparameters saved to best_hyperparameters.json")
+    # print("Best hyperparameters saved to best_hyperparameters.json")
 
-    # Initialize the best model
-    best_model = Vim(
-        dim=best_params['dim'],
-        # heads=8,
-        dt_rank=32,
-        dim_inner=best_params['dim'],
-        d_state=best_params['d_state'],
-        num_classes=1,  # For regression, typically the output is a single value per instance
-        image_size=286,
-        patch_size=13,
-        channels=1,
-        dropout=best_params['dropout'],
-        depth=best_params['depth'],
-    )
+    # # Initialize the best model
+    # best_model = Vim(
+    #     dim=best_params['dim'],
+    #     # heads=8,
+    #     dt_rank=32,
+    #     dim_inner=best_params['dim'],
+    #     d_state=best_params['d_state'],
+    #     num_classes=1,  # For regression, typically the output is a single value per instance
+    #     image_size=286,
+    #     patch_size=13,
+    #     channels=1,
+    #     dropout=best_params['dropout'],
+    #     depth=best_params['depth'],
+    # )
 
-    # Print model architecture to a file
-    model_architecture_file = 'model_architecture.txt'
-    with open(model_architecture_file, 'w') as f:
-        print(best_model, file=f)
+    # # Print model architecture to a file
+    # model_architecture_file = 'model_architecture.txt'
+    # with open(model_architecture_file, 'w') as f:
+    #     print(best_model, file=f)
 
-    print(f"Model architecture saved to {model_architecture_file}")
+    # print(f"Model architecture saved to {model_architecture_file}")
 
-    # Train the best model (use the objective function or similar training code)
-    # Assuming you have trained the best model here
+    # # Train the best model (use the objective function or similar training code)
+    # # Assuming you have trained the best model here
 
-    # Save the best model
-    model_save_path = 'best_model.pth'
-    torch.save(best_model.state_dict(), model_save_path)
-    print(f"Best model saved to {model_save_path}")
+    # # Save the best model
+    # model_save_path = 'best_model.pth'
+    # torch.save(best_model.state_dict(), model_save_path)
+    # print(f"Best model saved to {model_save_path}")
 
 
 
