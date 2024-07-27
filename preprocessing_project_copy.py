@@ -632,7 +632,7 @@ def training_vim(train_x, train_y):
 
     # Training loop
     model.train()  # Set the model to training mode
-    num_epochs = 100  # Define the number of epochs
+    num_epochs = 150  # Define the number of epochs
     verbose = True  # Set verbose to True to print correlation
 
     # Initialize lists to store the loss and correlation values for each epoch
@@ -720,7 +720,7 @@ def plot_vim(loss_values, correlation_values, num_epochs, time, name):
     plt.legend()
 
     # Add time annotation
-    plt.text(0.05, 0.95, f'MSE = {time:.2f}', transform=plt.gca().transAxes,
+    plt.text(0.05, 0.95, f'time = {time:.2f} s', transform=plt.gca().transAxes,
              fontsize=12, verticalalignment='top')
 
     # Save the plot to a file
@@ -1197,8 +1197,8 @@ def main():
 
     model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y)
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_100_epoch_0')
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_100_epoch_0')
+    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_150_epoch_0')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_150_epoch_0')
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
