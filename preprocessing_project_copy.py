@@ -611,16 +611,16 @@ def training_vim(train_x, train_y):
 
     # Initialize the Vim model
     model = Vim(
-        dim=128,
+        dim=122,
         dt_rank=32,
-        dim_inner=128,
-        d_state=97,
+        dim_inner=122,
+        d_state=120,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.26773,
-        depth=7,
+        dropout=0.1,
+        depth=10,
     )
 
     # Move the model to the GPU
@@ -628,7 +628,7 @@ def training_vim(train_x, train_y):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.000153341)
+    optimizer = optim.Adam(model.parameters(), lr=0.00021695439490401189)
 
     # Training loop
     model.train()  # Set the model to training mode
@@ -1197,8 +1197,8 @@ def main():
 
     model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y)
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_150_epoch_0')
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_150_epoch_0')
+    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_150_epoch_1')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_150_epoch_1')
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
