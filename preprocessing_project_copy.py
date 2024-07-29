@@ -607,7 +607,7 @@ def training_vim(train_x, train_y):
 
     # Create a TensorDataset and DataLoader
     dataset = TensorDataset(train_x_t, train_y_t)
-    train_loader = DataLoader(dataset, batch_size=8, shuffle=True)
+    train_loader = DataLoader(dataset, batch_size=12, shuffle=True)
 
     # Initialize the Vim model
     model = Vim(
@@ -632,7 +632,7 @@ def training_vim(train_x, train_y):
 
     # Training loop
     model.train()  # Set the model to training mode
-    num_epochs = 150  # Define the number of epochs
+    num_epochs = 100  # Define the number of epochs
     verbose = True  # Set verbose to True to print correlation
 
     # Initialize lists to store the loss and correlation values for each epoch
@@ -1197,8 +1197,8 @@ def main():
 
     model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y)
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_150_epoch_1')
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_150_epoch_1')
+    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_100_epoch_1')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_100_epoch_1')
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
