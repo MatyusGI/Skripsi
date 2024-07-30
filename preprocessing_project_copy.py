@@ -1197,8 +1197,8 @@ def main():
 
     model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y)
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_100_epoch_1')
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_100_epoch_1')
+    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_100_epoch_0')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_100_epoch_0')
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
