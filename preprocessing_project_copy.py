@@ -607,20 +607,20 @@ def training_vim(train_x, train_y):
 
     # Create a TensorDataset and DataLoader
     dataset = TensorDataset(train_x_t, train_y_t)
-    train_loader = DataLoader(dataset, batch_size=12, shuffle=True)
+    train_loader = DataLoader(dataset, batch_size=14, shuffle=True)
 
     # Initialize the Vim model
     model = Vim(
-        dim=122,
+        dim=128,
         dt_rank=32,
-        dim_inner=122,
-        d_state=120,
+        dim_inner=128,
+        d_state=97,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.1,
-        depth=10,
+        dropout=0.2677301595791723,
+        depth=7,
     )
 
     # Move the model to the GPU
@@ -628,7 +628,7 @@ def training_vim(train_x, train_y):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.00021695439490401189)
+    optimizer = optim.Adam(model.parameters(), lr=0.00015334092031733988)
 
     # Training loop
     model.train()  # Set the model to training mode
