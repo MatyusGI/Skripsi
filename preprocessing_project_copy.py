@@ -607,7 +607,7 @@ def training_vim(train_x, train_y):
 
     # Create a TensorDataset and DataLoader
     dataset = TensorDataset(train_x_t, train_y_t)
-    train_loader = DataLoader(dataset, batch_size=14, shuffle=True)
+    train_loader = DataLoader(dataset, batch_size=18, shuffle=True)
 
     # Initialize the Vim model
     model = Vim(
