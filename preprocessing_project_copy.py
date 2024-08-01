@@ -632,7 +632,7 @@ def training_vim(train_x, train_y):
 
     # Training loop
     model.train()  # Set the model to training mode
-    num_epochs = 150  # Define the number of epochs
+    num_epochs = 100  # Define the number of epochs
     verbose = True  # Set verbose to True to print correlation
 
     # Initialize lists to store the loss and correlation values for each epoch
@@ -695,6 +695,11 @@ def training_vim(train_x, train_y):
     # Calculate and print the total training time
     total_training_time = end_time - start_time
     print(f'Total Training Time: {total_training_time:.2f} seconds')
+
+    # Save the trained model
+    model_save_path = 'vim_model.pth'
+    torch.save(model.state_dict(), model_save_path)
+    print(f'Model saved to {model_save_path}')
 
     return model, loss_values, correlation_values, num_epochs, total_training_time
 
@@ -1136,7 +1141,7 @@ def plot_r_cnn(output_test, y_test, name):
     plt.savefig(name+'.png')
     plt.close()  # Close the figure to free up memory
 
-def plot_loss_cnn(test_losses, train_losses, name):
+def plot_loss_cnn(test_losses, train_losses, time, name):
     font_size = 14
     title_size = 20
 
@@ -1148,6 +1153,10 @@ def plot_loss_cnn(test_losses, train_losses, name):
     plt.ylabel('MSE', size=font_size)
     plt.legend(['Test', 'Training'], prop={'size': font_size})
     # plt.show()
+
+    # Add time annotation
+    plt.text(0.05, 0.95, f'time = {time:.2f} s', transform=plt.gca().transAxes,
+             fontsize=12, verticalalignment='top')
 
     # Save the plot to a file
     plt.savefig(name+'.png')
@@ -1197,8 +1206,8 @@ def main():
 
     model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y)
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_150_epoch_0')
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_150_epoch_0')
+    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_100_epoch_0')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_100_epoch_0')
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
@@ -1252,42 +1261,47 @@ def main():
 
 
 
-    # # Training CNN with fix parameters
-    # n_filters = 4
-    # filter_size = 4
-    # pooling_size = 2
-    # learning_rate = 1e-4
-    # input_shape = train_x.shape[-1]
+    # Training CNN with fix parameters
+    n_filters = 4
+    filter_size = 4
+    pooling_size = 2
+    learning_rate = 1e-4
+    input_shape = train_x.shape[-1]
 
-    # # Defining the model, optimiser and loss function
-    # model = ANTIPASTI(n_filters=n_filters, filter_size=filter_size, pooling_size=pooling_size, input_shape=input_shape, l1_lambda=0.002)
-    # criterion = MSELoss()
-    # optimiser = AdaBelief(model.parameters(), lr=learning_rate, weight_decay=False, eps=1e-8, print_change_log=False)
-    # # optimiser = Adam(model.parameters(), lr=learning_rate)
-    # print(model)
+    # Defining the model, optimiser and loss function
+    model = ANTIPASTI(n_filters=n_filters, filter_size=filter_size, pooling_size=pooling_size, input_shape=input_shape, l1_lambda=0.002)
+    criterion = MSELoss()
+    optimiser = AdaBelief(model.parameters(), lr=learning_rate, weight_decay=False, eps=1e-8, print_change_log=False)
+    # optimiser = Adam(model.parameters(), lr=learning_rate)
+    print(model)
 
-    # train_losses = []
-    # test_losses = []
+    train_losses = []
+    test_losses = []
 
-    # model.train()
-    # n_max_epochs = 200 # This is just a super short example. You can increase this.
-    # max_corr = 0.95
-    # batch_size = 32
+    model.train()
+    n_max_epochs = 100 # This is just a super short example. You can increase this.
+    max_corr = 0.95
+    batch_size = 32
 
-    # start_time = time.time()  # Start timing the training process
-    # train_loss, test_loss, inter_filter, y_test, output_test = training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=n_max_epochs, max_corr=max_corr, batch_size=batch_size)
-    # end_time = time.time()  # End timing the training process
+    start_time = time.time()  # Start timing the training process
+    train_loss, test_loss, inter_filter, y_test, output_test = training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=n_max_epochs, max_corr=max_corr, batch_size=batch_size)
+    end_time = time.time()  # End timing the training process
 
-    # # Calculate and print the total training time
-    # total_training_time = end_time - start_time
-    # print(f'Total Training Time: {total_training_time:.2f} seconds')
+    # Calculate and print the total training time
+    total_training_time = end_time - start_time
+    print(f'Total Training Time: {total_training_time:.2f} seconds')
 
-    # # Saving the losses
-    # train_losses.extend(train_loss)
-    # test_losses.extend(test_loss)
+    # Saving the losses
+    train_losses.extend(train_loss)
+    test_losses.extend(test_loss)
 
-    # plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch')
-    # plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_200_epoch')
+    # Save the trained model
+    model_save_path = 'cnn_model.pth'
+    torch.save(model.state_dict(), model_save_path)
+    print(f'Model saved to {model_save_path}')
+
+    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_100_epoch')
+    plot_loss_cnn(test_losses, train_losses, total_training_time, name='loss_training_performance_cnn_100_epoch')
 
 
 if __name__ == '__main__':
