@@ -1204,10 +1204,7 @@ def main():
 
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_50_epoch')
 
-    model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y)
-    test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_100_epoch_0')
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_100_epoch_0')
+    
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
@@ -1303,6 +1300,11 @@ def main():
     plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_100_epoch')
     plot_loss_cnn(test_losses, train_losses, total_training_time, name='loss_training_performance_cnn_100_epoch')
 
+
+    model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y)
+    test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
+    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_100_epoch_0')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_100_epoch_0')
 
 if __name__ == '__main__':
     main()
