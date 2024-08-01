@@ -18,6 +18,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from vision_mamba.model import Vim
 import time
+import time as time_module
 
 from torch.nn import Linear, ReLU, Conv2d, MaxPool2d, Module
 from torch.autograd import Variable
@@ -1204,10 +1205,7 @@ def main():
 
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_50_epoch')
 
-    model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y)
-    test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_100_epoch_0')
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_100_epoch_0')
+    
 
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
@@ -1283,9 +1281,9 @@ def main():
     max_corr = 0.95
     batch_size = 32
 
-    start_time = time.time()  # Start timing the training process
+    start_time = time_module.time()  # Start timing the training process
     train_loss, test_loss, inter_filter, y_test, output_test = training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=n_max_epochs, max_corr=max_corr, batch_size=batch_size)
-    end_time = time.time()  # End timing the training process
+    end_time = time_module.time()  # End timing the training process
 
     # Calculate and print the total training time
     total_training_time = end_time - start_time
@@ -1303,6 +1301,11 @@ def main():
     plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_100_epoch')
     plot_loss_cnn(test_losses, train_losses, total_training_time, name='loss_training_performance_cnn_100_epoch')
 
+
+    model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y)
+    test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
+    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_100_epoch_0')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_100_epoch_0')
 
 if __name__ == '__main__':
     main()
