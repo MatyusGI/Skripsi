@@ -1314,7 +1314,7 @@ def main():
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
     train_y, test_x, test_y, epoch=50)
     plot_vim_combined(
-        loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, time, 
+        train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
         name='training_performance_with_test'
     )
 
