@@ -808,22 +808,21 @@ def plot_vim(loss_values, correlation_values, num_epochs, name):
 #     return average_loss
 
 
-def training_vim_test(train_x, train_y, test_x, test_y, patience=10):
+def training_vim_test(train_x, train_y, test_x, test_y, epoch):
     # Check if GPU is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Convert input arrays to tensors
+    # Assuming train_x, train_y, test_x, and test_y are your input arrays
     train_x_t = torch.tensor(train_x, dtype=torch.float32).to(device)
     train_y_t = torch.tensor(train_y, dtype=torch.float32).to(device)
     test_x_t = torch.tensor(test_x, dtype=torch.float32).to(device)
     test_y_t = torch.tensor(test_y, dtype=torch.float32).to(device)
 
-    # Create TensorDataset and DataLoader for training and validation datasets
+    # Create TensorDatasets and DataLoaders
     train_dataset = TensorDataset(train_x_t, train_y_t)
     test_dataset = TensorDataset(test_x_t, test_y_t)
-
-    train_loader = DataLoader(train_dataset, batch_size=12, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=12, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=20, shuffle=False)
 
     # Initialize the Vim model
     model = Vim(
@@ -831,11 +830,11 @@ def training_vim_test(train_x, train_y, test_x, test_y, patience=10):
         dt_rank=32,
         dim_inner=128,
         d_state=97,
-        num_classes=1,
+        num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.26773,
+        dropout=0.2677301595791723,
         depth=7,
     )
 
@@ -844,38 +843,34 @@ def training_vim_test(train_x, train_y, test_x, test_y, patience=10):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.000153341)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
-
-    # # Early stopping parameters
-    # best_val_loss = float('inf')
-    # patience_counter = 0
+    optimizer = optim.Adam(model.parameters(), lr=0.00015334092031733988)
 
     # Training loop
-    model.train()
-    num_epochs = 20
-    verbose = True
+    model.train()  # Set the model to training mode
+    num_epochs = epoch  # Define the number of epochs
+    verbose = True  # Set verbose to True to print correlation
 
     # Initialize lists to store the loss and correlation values for each epoch
     train_loss_values = []
     train_correlation_values = []
-    val_loss_values = []
-    val_correlation_values = []
+    test_loss_values = []
+    test_correlation_values = []
 
     # Record the start time
     start_time = time.time()
 
     for epoch in range(num_epochs):
-        model.train()  # Set the model to training mode
-        total_train_loss = 0.0
-        num_train_batches = 0
-        train_outputs_all = []
-        train_targets_all = []
+        model.train()  # Set the model to training mode for training loop
+        total_loss = 0.0
+        num_batches = 0
+        outputs_all = []
+        targets_all = []
 
         for batch_inputs, batch_targets in train_loader:
+            # Move the inputs and targets to the GPU
             batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
 
-            optimizer.zero_grad()
+            optimizer.zero_grad()  # Zero the parameter gradients
 
             # Forward pass
             outputs = model(batch_inputs)
@@ -886,78 +881,70 @@ def training_vim_test(train_x, train_y, test_x, test_y, patience=10):
             optimizer.step()
 
             # Accumulate loss
-            total_train_loss += loss.item()
-            num_train_batches += 1
+            total_loss += loss.item()
+            num_batches += 1
 
-            # Collect outputs and targets for correlation
-            train_outputs_all.append(outputs.view(-1).detach().cpu().numpy())
-            train_targets_all.append(batch_targets.view(-1).detach().cpu().numpy())
+            # Debugging shapes
+            print("Output shape:", outputs.shape)
+            print("Target shape:", batch_targets.shape)
 
-        # Step the scheduler
-        scheduler.step()
+            # Collect outputs and targets for correlation, ensure they are flattened
+            outputs_all.append(outputs.view(-1).detach().cpu().numpy())
+            targets_all.append(batch_targets.view(-1).detach().cpu().numpy())
 
-        # Calculate average training loss for the epoch
-        average_train_loss = total_train_loss / num_train_batches
-        print(f'Epoch {epoch + 1}: Average Training Loss {average_train_loss:.4f}')
+        # Calculate average loss for the epoch
+        average_loss = total_loss / num_batches
+        print(f'Epoch {epoch + 1}: Average Loss {average_loss:.4f}')
 
-        # Compute training correlation
-        train_outputs_flat = np.concatenate(train_outputs_all)
-        train_targets_flat = np.concatenate(train_targets_all)
-        train_corr = calculate_correlation(train_outputs_flat, train_targets_flat)
+        # Compute correlation
+        outputs_flat = np.concatenate(outputs_all)
+        targets_flat = np.concatenate(targets_all)
+        corr = np.corrcoef(outputs_flat, targets_flat)[0, 1]
         if verbose:
-            print(f'Epoch {epoch + 1}: Training Correlation: {train_corr:.4f}')
+            print('Epoch {}: Train Correlation: {:.4f}'.format(epoch + 1, corr))
 
-        # Append training loss and correlation values to the lists
-        train_loss_values.append(average_train_loss)
-        train_correlation_values.append(train_corr)
+        # Append loss and correlation values to the lists
+        train_loss_values.append(average_loss)
+        train_correlation_values.append(corr)
 
-        # Validation phase
+        # Evaluate on test set
         model.eval()  # Set the model to evaluation mode
-        total_val_loss = 0.0
-        num_val_batches = 0
-        val_outputs_all = []
-        val_targets_all = []
+        test_total_loss = 0.0
+        test_num_batches = 0
+        test_outputs_all = []
+        test_targets_all = []
 
         with torch.no_grad():
-            for val_inputs, val_targets in test_loader:
-                val_inputs, val_targets = val_inputs.to(device), val_targets.to(device)
+            for batch_inputs, batch_targets in test_loader:
+                # Move the inputs and targets to the GPU
+                batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
 
                 # Forward pass
-                val_outputs = model(val_inputs)
-                val_loss = criterion(val_outputs, val_targets)
+                outputs = model(batch_inputs)
+                loss = criterion(outputs, batch_targets)
 
                 # Accumulate loss
-                total_val_loss += val_loss.item()
-                num_val_batches += 1
+                test_total_loss += loss.item()
+                test_num_batches += 1
 
-                # Collect outputs and targets for correlation
-                val_outputs_all.append(val_outputs.view(-1).cpu().numpy())
-                val_targets_all.append(val_targets.view(-1).cpu().numpy())
+                # Collect outputs and targets for correlation, ensure they are flattened
+                test_outputs_all.append(outputs.view(-1).cpu().numpy())
+                test_targets_all.append(batch_targets.view(-1).cpu().numpy())
 
-        # Calculate average validation loss for the epoch
-        average_val_loss = total_val_loss / num_val_batches
-        print(f'Epoch {epoch + 1}: Average Validation Loss {average_val_loss:.4f}')
+        # Calculate average test loss for the epoch
+        test_average_loss = test_total_loss / test_num_batches
+        print(f'Epoch {epoch + 1}: Test Average Loss {test_average_loss:.4f}')
 
-        # Compute validation correlation
-        val_outputs_flat = np.concatenate(val_outputs_all)
-        val_targets_flat = np.concatenate(val_targets_all)
-        val_corr = calculate_correlation(val_outputs_flat, val_targets_flat)
+        # Compute test correlation
+        test_outputs_flat = np.concatenate(test_outputs_all)
+        test_targets_flat = np.concatenate(test_targets_all)
+        test_corr = np.corrcoef(test_outputs_flat, test_targets_flat)[0, 1]
         if verbose:
-            print(f'Epoch {epoch + 1}: Validation Correlation: {val_corr:.4f}')
+            print('Epoch {}: Test Correlation: {:.4f}'.format(epoch + 1, test_corr))
 
-        # Append validation loss and correlation values to the lists
-        val_loss_values.append(average_val_loss)
-        val_correlation_values.append(val_corr)
-
-        # # Early stopping check
-        # if average_val_loss < best_val_loss:
-        #     best_val_loss = average_val_loss
-        #     patience_counter = 0
-        # else:
-        #     patience_counter += 1
-        #     if patience_counter >= patience:
-        #         print(f'Early stopping triggered after {epoch + 1} epochs')
-        #         break
+        # Append test loss and correlation values to the lists
+        test_loss_values.append(test_average_loss)
+        test_correlation_values.append(test_corr)
 
     # Record the end time
     end_time = time.time()
@@ -966,7 +953,12 @@ def training_vim_test(train_x, train_y, test_x, test_y, patience=10):
     total_training_time = end_time - start_time
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
-    return train_loss_values, train_correlation_values, val_loss_values, val_correlation_values, num_epochs
+    # # Save the trained model
+    # model_save_path = 'vim_model.pth'
+    # torch.save(model.state_dict(), model_save_path)
+    # print(f'Model saved to {model_save_path}')
+
+    return model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, total_training_time
 
     
 def calculate_correlation(outputs, targets):
@@ -977,7 +969,7 @@ def calculate_correlation(outputs, targets):
     return np.corrcoef(outputs, targets)[0, 1]
 
 
-def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, name):
+def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, time, name):
     # Plotting loss and correlation
     plt.figure(figsize=(12, 5))
 
@@ -993,11 +985,15 @@ def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_tra
     # Plot training and validation correlation
     plt.subplot(1, 2, 2)
     plt.plot(range(1, num_epochs + 1), correlation_values_train, label='Training Correlation', color='blue')
-    plt.plot(range(1, num_epochs + 1), correlation_values_val, label='Validation Correlation', color='orange')
+    # plt.plot(range(1, num_epochs + 1), correlation_values_val, label='Validation Correlation', color='orange')
     plt.title('Train R = '+str(correlation_values_train[-1]), size=20)
     plt.xlabel('Epoch', size=14)
     plt.ylabel('Correlation', size=14)
     plt.legend(prop={'size': 14})
+
+    # Add time annotation
+    plt.text(0.05, 0.95, f'time = {time:.2f} s', transform=plt.gca().transAxes,
+             fontsize=12, verticalalignment='top')
 
     # Save the plot to a file
     plt.savefig(name + '.png')
@@ -1315,9 +1311,10 @@ def main():
 
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
-    loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs = training_vim_test(train_x, train_y, test_x, test_y)
+    loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, time = training_vim_test(train_x, 
+    train_y, test_x, test_y, epoch=50)
     plot_vim_combined(
-        loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, 
+        loss_values_train, loss_values_val, correlation_values_train, correlation_values_val, num_epochs, time, 
         name='training_performance_with_test'
     )
 
