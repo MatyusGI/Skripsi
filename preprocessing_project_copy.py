@@ -1277,7 +1277,7 @@ def main():
     test_losses = []
 
     model.train()
-    n_max_epochs = 750 # This is just a super short example. You can increase this.
+    n_max_epochs = 1000 # This is just a super short example. You can increase this.
     max_corr = 0.95
     batch_size = 32
 
@@ -1298,14 +1298,14 @@ def main():
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
-    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_750_epoch')
-    plot_loss_cnn(test_losses, train_losses, total_training_time, name='loss_training_performance_cnn_750_epoch')
+    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_1000_epoch')
+    plot_loss_cnn(test_losses, train_losses, total_training_time, name='loss_training_performance_cnn_1000_epoch')
 
 
-    model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y, epoch=750)
+    model, loss_values, correlation_values, num_epochs, time = training_vim(train_x, train_y, epoch=1000)
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_750_epoch_0')
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_750_epoch_0')
+    plot_vim(loss_values, correlation_values, num_epochs, time, name='training_performance_vim_1000_epoch_0')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='test_performace_vim_1000_epoch_0')
 
 if __name__ == '__main__':
     main()
