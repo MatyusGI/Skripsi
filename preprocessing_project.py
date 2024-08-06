@@ -733,9 +733,9 @@ def objective(trial, train_x, train_y, test_x, test_y):
     dim = trial.suggest_int('dim', 64, 128)
     d_state = trial.suggest_int('d_state', 64, 128)
     depth = trial.suggest_int('depth', 4, 12)
-    dropout = trial.suggest_categorical('dropout', 0.1, 0.2, 0.3, 0.4, 0.5)
-    learning_rate = trial.suggest_categorical('learning_rate', 1e-5, 1e-4, 1e-3, 1e-2)
-    weight_decay = trial.suggest_categorical('weight_decay', 1e-6, 1e-5, 1e-4, 1e-3, 1e-2)
+    dropout = trial.suggest_categorical('dropout', [0.1, 0.2, 0.3, 0.4, 0.5])
+    learning_rate = trial.suggest_categorical('learning_rate', [1e-5, 1e-4, 1e-3, 1e-2])
+    weight_decay = trial.suggest_categorical('weight_decay', [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 2e-4])
 
     # Initialize the Vim model
     model = Vim(
