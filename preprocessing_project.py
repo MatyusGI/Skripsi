@@ -843,7 +843,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.00015334092031733988)
+    optimizer = optim.Adam(model.parameters(), lr=0.00015334092031733988, weight_decay=1e-5)
 
     # Training loop
     model.train()  # Set the model to training mode
@@ -953,10 +953,10 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     total_training_time = end_time - start_time
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
-    # # Save the trained model
-    # model_save_path = 'vim_model.pth'
-    # torch.save(model.state_dict(), model_save_path)
-    # print(f'Model saved to {model_save_path}')
+    # Save the trained model
+    model_save_path = 'vim_model.pth'
+    torch.save(model.state_dict(), model_save_path)
+    print(f'Model saved to {model_save_path}')
 
     # Plot true vs predicted values for the test set
     plt.figure(figsize=(10, 5))
@@ -1315,7 +1315,7 @@ def main():
                                                             file_residues_paths, max_res_list_h, max_res_list_l, heavy, light)
 
     # Create the test set
-    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.05, random_state=23)
+    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.1, random_state=23)
 
 
     # # Training VIM with fix parameters
@@ -1324,7 +1324,7 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=400, name='R_performance_with_test')
+    train_y, test_x, test_y, epoch=100, name='R_performance_with_test')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
         name='training_performance_with_test'
