@@ -550,7 +550,7 @@ def load_training_images(dccm_map_path, selected_entries, pathological, entries,
     return np.array(imgs), np.array(kds), labels, raw_imgs
 
 
-def create_test_set(train_x, train_y, test_size=None, random_state=0):
+def create_test_set(train_x, train_y, test_size=0.023, random_state=23):
     r"""Creates the test set given a set of input images and their corresponding labels.
 
     Parameters
@@ -579,7 +579,7 @@ def create_test_set(train_x, train_y, test_size=None, random_state=0):
 
     # Splitting
     indices = np.arange(len(train_x))
-    train_x, test_x, train_y, test_y, indices_train, indices_test = train_test_split(train_x, train_y, indices, test_size=0.023, random_state=23)
+    train_x, test_x, train_y, test_y, indices_train, indices_test = train_test_split(train_x, train_y, indices, test_size=test_size, random_state=random_state)
 
     # Converting to tensors
     train_x = train_x.reshape(train_x.shape[0], 1, train_x.shape[1], train_x.shape[1])
@@ -1315,7 +1315,7 @@ def main():
                                                             file_residues_paths, max_res_list_h, max_res_list_l, heavy, light)
 
     # Create the test set
-    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.1)
+    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.05, random_state=23)
 
 
     # # Training VIM with fix parameters
@@ -1324,7 +1324,7 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=200, name='R_performance_with_test')
+    train_y, test_x, test_y, epoch=400, name='R_performance_with_test')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
         name='training_performance_with_test'
