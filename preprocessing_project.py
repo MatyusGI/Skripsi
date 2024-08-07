@@ -734,8 +734,8 @@ def objective(trial, train_x, train_y, test_x, test_y):
     d_state = trial.suggest_int('d_state', 64, 128)
     depth = trial.suggest_int('depth', 4, 12)
     dropout = trial.suggest_categorical('dropout', [0.1, 0.2, 0.3, 0.4, 0.5])
-    learning_rate = trial.suggest_categorical('learning_rate', [1e-5, 1e-4, 1e-3, 1e-2])
-    weight_decay = trial.suggest_categorical('weight_decay', [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 2e-4])
+    learning_rate = trial.suggest_categorical('learning_rate', [1e-5, 1e-4, 1e-3, 2e-4])
+    weight_decay = trial.suggest_categorical('weight_decay', [1e-6, 1e-5, 1e-4])
 
     # Initialize the Vim model
     model = Vim(
@@ -1351,52 +1351,52 @@ def main():
 
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
-    model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=50, name='R_performance_with_test')
-    plot_vim_combined(
-        train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_with_test'
-    )
-
-    # # Set CUDA_LAUNCH_BLOCKING to help with debugging
-    # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-
-
-    # # Hyperparameter search using optuna
-    # # Running the hyperparameter search
-    # study = optuna.create_study(direction='minimize')
-    # study.optimize(lambda trial: objective(trial, train_x, train_y, test_x, test_y), n_trials=30)  # Number of trials
-
-    # # Get the best hyperparameters
-    # best_params = study.best_params
-    # print("Best hyperparameters:", best_params)
-
-    # # Save the best hyperparameters to a JSON file
-    # with open('best_hyperparameters.json', 'w') as f:
-    #     json.dump(best_params, f, indent=4)
-
-    # print("Best hyperparameters saved to best_hyperparameters.json")
-
-    # # Initialize the best model
-    # best_model = Vim(
-    #     dim=best_params['dim'],
-    #     dt_rank=32,
-    #     dim_inner=best_params['dim'],
-    #     d_state=best_params['d_state'],
-    #     num_classes=1,  # For regression, typically the output is a single value per instance
-    #     image_size=286,
-    #     patch_size=13,
-    #     channels=1,
-    #     dropout=best_params['dropout'],
-    #     depth=best_params['depth'],
+    # model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
+    # train_y, test_x, test_y, epoch=50, name='R_performance_with_test')
+    # plot_vim_combined(
+    #     train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
+    #     name='training_performance_with_test'
     # )
 
-    # # Print model architecture to a file
-    # model_architecture_file = 'model_architecture.txt'
-    # with open(model_architecture_file, 'w') as f:
-    #     print(best_model, file=f)
+    # Set CUDA_LAUNCH_BLOCKING to help with debugging
+    os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
-    # print(f"Model architecture saved to {model_architecture_file}")
+
+    # Hyperparameter search using optuna
+    # Running the hyperparameter search
+    study = optuna.create_study(direction='minimize')
+    study.optimize(lambda trial: objective(trial, train_x, train_y, test_x, test_y), n_trials=30)  # Number of trials
+
+    # Get the best hyperparameters
+    best_params = study.best_params
+    print("Best hyperparameters:", best_params)
+
+    # Save the best hyperparameters to a JSON file
+    with open('best_hyperparameters.json', 'w') as f:
+        json.dump(best_params, f, indent=4)
+
+    print("Best hyperparameters saved to best_hyperparameters.json")
+
+    # Initialize the best model
+    best_model = Vim(
+        dim=best_params['dim'],
+        dt_rank=32,
+        dim_inner=best_params['dim'],
+        d_state=best_params['d_state'],
+        num_classes=1,  # For regression, typically the output is a single value per instance
+        image_size=286,
+        patch_size=13,
+        channels=1,
+        dropout=best_params['dropout'],
+        depth=best_params['depth'],
+    )
+
+    # Print model architecture to a file
+    model_architecture_file = 'model_architecture.txt'
+    with open(model_architecture_file, 'w') as f:
+        print(best_model, file=f)
+
+    print(f"Model architecture saved to {model_architecture_file}")
 
     # Train the best model (use the objective function or similar training code)
     # Assuming you have trained the best model here
