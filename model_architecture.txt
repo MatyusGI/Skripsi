@@ -1,0 +1,27 @@
+Vim(
+  (to_patch_embedding): Sequential(
+    (0): Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1=13, p2=13)
+    (1): Linear(in_features=169, out_features=118, bias=True)
+  )
+  (dropout): Dropout(p=0.5, inplace=False)
+  (to_latent): Identity()
+  (layers): ModuleList(
+    (0-5): 6 x VisionEncoderMambaBlock(
+      (forward_conv1d): Conv1d(118, 118, kernel_size=(1,), stride=(1,))
+      (backward_conv1d): Conv1d(118, 118, kernel_size=(1,), stride=(1,))
+      (norm): LayerNorm((118,), eps=1e-05, elementwise_affine=True)
+      (silu): SiLU()
+      (ssm): SSM(
+        (deltaBC_layer): Linear(in_features=118, out_features=206, bias=False)
+        (dt_proj_layer): Linear(in_features=32, out_features=118, bias=True)
+      )
+      (proj): Linear(in_features=118, out_features=118, bias=True)
+      (softplus): Softplus(beta=1.0, threshold=20.0)
+    )
+  )
+  (output_head): Sequential(
+    (0): Reduce('b s d -> b d', 'mean')
+    (1): LayerNorm((118,), eps=1e-05, elementwise_affine=True)
+    (2): Linear(in_features=118, out_features=1, bias=True)
+  )
+)
