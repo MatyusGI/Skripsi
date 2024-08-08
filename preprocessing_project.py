@@ -839,8 +839,18 @@ def objective(trial, train_x, train_y, test_x, test_y):
 
         # Calculate average test loss for the epoch
         test_average_loss = test_total_loss / test_num_batches
-        
-    return test_average_loss
+
+        # Compute test correlation
+        test_outputs_flat = np.concatenate(test_outputs_all)
+        test_targets_flat = np.concatenate(test_targets_all)
+        test_corr = np.corrcoef(test_outputs_flat, test_targets_flat)[0, 1]
+
+    # Combine loss and correlation into a single metric
+    # We want to minimize loss and maximize correlation
+    # So we'll use (1 - correlation) to make it a minimization problem
+    combined_metric = 0.7 * test_average_loss + 0.3 * (1 - test_corr)
+            
+    return combined_metric
 
 
 def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
