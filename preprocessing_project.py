@@ -871,16 +871,16 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Initialize the Vim model
     model = Vim(
-        dim=101,
+        dim=118,
         dt_rank=32,
-        dim_inner=101,
-        d_state=86,
+        dim_inner=118,
+        d_state=87,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.1,
-        depth=10,
+        dropout=0.5,
+        depth=6,
     )
 
     # Move the model to the GPU
@@ -888,7 +888,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=1e-5)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.0001)
 
     # Training loop
     model.train()  # Set the model to training mode
@@ -1362,7 +1362,7 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=150, name='R_performance_with_test')
+    train_y, test_x, test_y, epoch=100, name='R_performance_with_test')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
         name='training_performance_with_test'
