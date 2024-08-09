@@ -866,8 +866,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     # Create TensorDatasets and DataLoaders
     train_dataset = TensorDataset(train_x_t, train_y_t)
     test_dataset = TensorDataset(test_x_t, test_y_t)
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
     # Initialize the Vim model
     model = Vim(
@@ -1362,7 +1362,7 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=50, name='R_performance_with_test')
+    train_y, test_x, test_y, epoch=150, name='R_performance_with_test')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
         name='training_performance_with_test'
