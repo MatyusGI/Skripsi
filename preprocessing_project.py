@@ -1026,7 +1026,7 @@ def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_tra
     # Plot training and validation loss
     plt.subplot(1, 2, 1)
     plt.plot(range(1, num_epochs + 1), loss_values_train, label='Training Loss')
-    plt.plot(range(1, num_epochs + 1), loss_values_val, label='Validation Loss')
+    plt.plot(range(1, num_epochs + 1), loss_values_val, label='Test Loss')
     plt.title('Loss over Epochs', size=20)
     plt.xlabel('Epoch', size=14)
     plt.ylabel('Loss', size=14)
@@ -1362,7 +1362,7 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=100, name='R_performance_with_test_400_epoch')
+    train_y, test_x, test_y, epoch=400, name='R_performance_with_test_400_epoch')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
         name='training_performance_with_test_400_epoch'
