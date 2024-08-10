@@ -998,10 +998,10 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     total_training_time = end_time - start_time
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
-    # Save the trained model
-    # model_save_path = 'vim_model.pth'
-    # torch.save(model.state_dict(), model_save_path)
-    # print(f'Model saved to {model_save_path}')
+    Save the trained model
+    model_save_path = 'vim_model.pth'
+    torch.save(model.state_dict(), model_save_path)
+    print(f'Model saved to {model_save_path}')
 
     # Plot true vs predicted values for the test set
     plt.figure(figsize=(10, 5))
@@ -1362,7 +1362,7 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=400, name='R_performance_with_test_400_epoch')
+    train_y, test_x, test_y, epoch=100, name='R_performance_with_test_400_epoch')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
         name='training_performance_with_test_400_epoch'
