@@ -998,7 +998,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     total_training_time = end_time - start_time
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
-    Save the trained model
+    # Save the trained model
     model_save_path = 'vim_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
