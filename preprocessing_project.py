@@ -866,8 +866,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     # Create TensorDatasets and DataLoaders
     train_dataset = TensorDataset(train_x_t, train_y_t)
     test_dataset = TensorDataset(test_x_t, test_y_t)
-    train_loader = DataLoader(train_dataset, batch_size=26, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=26, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=28, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=28, shuffle=False)
 
     # Initialize the Vim model
     model = Vim(
