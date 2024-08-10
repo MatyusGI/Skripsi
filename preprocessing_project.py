@@ -866,8 +866,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     # Create TensorDatasets and DataLoaders
     train_dataset = TensorDataset(train_x_t, train_y_t)
     test_dataset = TensorDataset(test_x_t, test_y_t)
-    train_loader = DataLoader(train_dataset, batch_size=22, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=22, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=26, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=26, shuffle=False)
 
     # Initialize the Vim model
     model = Vim(
@@ -888,7 +888,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.01)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
 
     # Training loop
     model.train()  # Set the model to training mode
@@ -1362,10 +1362,10 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=200, name='R_performance_with_test')
+    train_y, test_x, test_y, epoch=400, name='R_performance_with_test_400_epoch')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_with_test'
+        name='training_performance_with_test_400_epoch'
     )
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
