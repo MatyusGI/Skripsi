@@ -1362,10 +1362,10 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=400, name='R_performance_with_test_400_epoch')
+    train_y, test_x, test_y, epoch=700, name='R_performance_with_test_700_epoch')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_with_test_400_epoch'
+        name='training_performance_with_test_700_epoch'
     )
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
