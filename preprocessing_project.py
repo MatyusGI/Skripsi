@@ -1004,17 +1004,17 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
-    # Plot true vs predicted values for the test set
-    plt.figure(figsize=(10, 5))
-    plt.scatter(test_targets_flat, test_outputs_flat, alpha=0.5)
-    plt.plot([min(test_targets_flat), max(test_targets_flat)], [min(test_targets_flat), max(test_targets_flat)], 'k--', lw=2)
-    plt.xlabel('True Values')
-    plt.ylabel('Predicted Values')
-    plt.title(f'R = {test_corr:.4f}')
+    # # Plot true vs predicted values for the test set
+    # plt.figure(figsize=(10, 5))
+    # plt.scatter(test_targets_flat, test_outputs_flat, alpha=0.5)
+    # plt.plot([min(test_targets_flat), max(test_targets_flat)], [min(test_targets_flat), max(test_targets_flat)], 'k--', lw=2)
+    # plt.xlabel('True Values')
+    # plt.ylabel('Predicted Values')
+    # plt.title(f'R = {test_corr:.4f}')
 
-    # Save the plot to a file
-    plt.savefig(name + '.png')
-    plt.close()  # Close the figure to free up memory
+    # # Save the plot to a file
+    # plt.savefig(name + '.png')
+    # plt.close()  # Close the figure to free up memory
 
     return model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, total_training_time
 
@@ -1050,6 +1050,55 @@ def plot_vim_combined(loss_values_train, loss_values_val, correlation_values_tra
     plt.savefig(name + '.png')
     plt.close()  # Close the figure to free up memory
 
+
+def test_vim(model, test_x, test_y):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    test_x_t = torch.tensor(test_x, dtype=torch.float32).to(device)
+    test_y_t = torch.tensor(test_y, dtype=torch.float32).to(device)
+
+    dataset = TensorDataset(test_x_t, test_y_t)
+    test_loader = DataLoader(dataset, batch_size=1, shuffle=False)
+
+    model.eval()  # Set the model to evaluation mode
+
+    outputs_all = []
+    targets_all = []
+
+    with torch.no_grad():
+        for batch_inputs, batch_targets in test_loader:
+            batch_inputs, batch_targets = batch_inputs.to(device), batch_targets.to(device)
+
+            outputs = model(batch_inputs)
+
+            outputs_all.append(outputs.view(-1).detach().cpu().numpy())
+            targets_all.append(batch_targets.view(-1).detach().cpu().numpy())
+
+    outputs_flat = np.concatenate(outputs_all)
+    targets_flat = np.concatenate(targets_all)
+    mse = mean_squared_error(targets_flat, outputs_flat)
+    corr = np.corrcoef(outputs_flat, targets_flat)[0, 1]
+    print(f'Test MSE: {mse:.4f}')
+    print(f'Test Correlation: {corr:.4f}')
+
+    return mse, corr, outputs_flat, targets_flat
+
+
+def plot_test_results(outputs, targets, corr, mse, name):
+    plt.figure(figsize=(10, 6))
+    plt.scatter(targets, outputs, alpha=0.5)
+    plt.plot([targets.min(), targets.max()], [targets.min(), targets.max()], 'k--', lw=2)
+    plt.xlabel('True Values')
+    plt.ylabel('Predicted Values')
+    plt.title('R = '+str(corr))
+
+    # Add MSE annotation
+    plt.text(0.05, 0.95, f'MSE = {mse:.2f}', transform=plt.gca().transAxes,
+             fontsize=12, verticalalignment='top')
+    
+    # Save the plot to a file
+    plt.savefig(name + '.png')
+    plt.close()  # Close the figure to free up memory
 
 
 class ANTIPASTI(Module):
@@ -1363,11 +1412,13 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=400, name='R_performance_with_test_400_epoch')
+    train_y, test_x, test_y, epoch=400, name='')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_with_test_400_epoch'
+        name='training_performance_vim_400_epoch'
     )
+    test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_400_epoch')
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
