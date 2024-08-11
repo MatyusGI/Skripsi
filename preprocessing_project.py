@@ -871,15 +871,15 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Initialize the Vim model
     model = Vim(
-        dim=64,
+        dim=60,
         dt_rank=32,
-        dim_inner=64,
-        d_state=64,
+        dim_inner=60,
+        d_state=60,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
-        patch_size=13,
+        patch_size=9,
         channels=1,
-        dropout=0.5,
+        dropout=0.6,
         depth=4,
     )
 
