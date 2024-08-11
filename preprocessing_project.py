@@ -890,6 +890,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=1e-03)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
 
     # Training loop
     model.train()  # Set the model to training mode
@@ -1403,7 +1404,7 @@ def main():
                                                             file_residues_paths, max_res_list_h, max_res_list_l, heavy, light)
 
     # Create the test set
-    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.1, random_state=23)
+    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.023, random_state=23)
 
 
     # Training VIM with fix parameters
