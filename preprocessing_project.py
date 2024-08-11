@@ -877,7 +877,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
         d_state=60,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
-        patch_size=9,
+        patch_size=11,
         channels=1,
         dropout=0.6,
         depth=4,
