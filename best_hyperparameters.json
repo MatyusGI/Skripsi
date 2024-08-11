@@ -1,0 +1,9 @@
+{
+    "dim": 28,
+    "dt_rank": 8,
+    "d_state": 64,
+    "depth": 5,
+    "dropout": 0.5,
+    "learning_rate": 0.0001,
+    "weight_decay": 1e-05
+}
