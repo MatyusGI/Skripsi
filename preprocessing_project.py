@@ -871,15 +871,15 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Initialize the Vim model
     model = Vim(
-        dim=60,
+        dim=64,
         dt_rank=32,
-        dim_inner=60,
-        d_state=60,
+        dim_inner=64,
+        d_state=64,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=11,
         channels=1,
-        dropout=0.6,
+        dropout=0.5,
         depth=4,
     )
 
@@ -1362,10 +1362,10 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=400, name='R_performance_with_test_400_epoch')
+    train_y, test_x, test_y, epoch=300, name='R_performance_with_test_300_epoch')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_with_test_400_epoch'
+        name='training_performance_with_test_300_epoch'
     )
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
