@@ -875,13 +875,13 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
         dim=28,
         dt_rank=8,
         dim_inner=28,
-        d_state=64,
+        d_state=28,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
         dropout=0.5,
-        depth=5,
+        depth=4,
     )
 
     # Move the model to the GPU
@@ -889,7 +889,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=1e-05)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=1e-04)
 
     # Training loop
     model.train()  # Set the model to training mode
