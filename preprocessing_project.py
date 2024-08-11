@@ -880,7 +880,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.5,
+        dropout=0.4,
         depth=4,
     )
 
@@ -889,8 +889,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=1e-03)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
+    optimizer = optim.Adam(model.parameters(), lr=0.0005, weight_decay=1e-03)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10, verbose=True)
 
     # Training loop
     model.train()  # Set the model to training mode
@@ -925,6 +925,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
             # Backward pass and optimize
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
 
             # Accumulate loss
@@ -942,6 +943,9 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
         # Calculate average loss for the epoch
         average_loss = total_loss / num_batches
         print(f'Epoch {epoch + 1}: Average Loss {average_loss:.4f}')
+
+        # Step the scheduler
+        scheduler.step(average_loss)
 
         # Compute correlation
         outputs_flat = np.concatenate(outputs_all)
