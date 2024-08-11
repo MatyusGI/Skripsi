@@ -866,21 +866,21 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     # Create TensorDatasets and DataLoaders
     train_dataset = TensorDataset(train_x_t, train_y_t)
     test_dataset = TensorDataset(test_x_t, test_y_t)
-    train_loader = DataLoader(train_dataset, batch_size=28, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=28, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
     # Initialize the Vim model
     model = Vim(
-        dim=118,
+        dim=64,
         dt_rank=32,
-        dim_inner=118,
-        d_state=87,
+        dim_inner=64,
+        d_state=64,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
         dropout=0.5,
-        depth=6,
+        depth=4,
     )
 
     # Move the model to the GPU
@@ -1362,10 +1362,10 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=700, name='R_performance_with_test_700_epoch')
+    train_y, test_x, test_y, epoch=400, name='R_performance_with_test_400_epoch')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_with_test_700_epoch'
+        name='training_performance_with_test_400_epoch'
     )
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
