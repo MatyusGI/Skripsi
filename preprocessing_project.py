@@ -872,16 +872,16 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Initialize the Vim model
     model = Vim(
-        dim=80,
-        dt_rank=16,
-        dim_inner=80,
-        d_state=64,
+        dim=16,
+        dt_rank=8,
+        dim_inner=16,
+        d_state=16,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
         dropout=0.2,
-        depth=5,
+        depth=4,
     )
 
     # Move the model to the GPU
@@ -889,7 +889,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-03)
+    optimizer = optim.Adam(model.parameters(), lr=0.00001, weight_decay=1e-03)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10, verbose=True)
 
     # Training loop
@@ -1005,7 +1005,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
     # Save the trained model
-    model_save_path = 'vim_model_'+str(epoch)+'.pth'
+    model_save_path = 'vim_model_'+str(epoch+1)+'.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
@@ -1417,13 +1417,13 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=400, name='')
+    train_y, test_x, test_y, epoch=200, name='')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_vim_400_epoch'
+        name='training_performance_vim_200_epoch'
     )
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_400_epoch')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_200_epoch')
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
