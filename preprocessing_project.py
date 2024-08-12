@@ -872,10 +872,10 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Initialize the Vim model
     model = Vim(
-        dim=28,
+        dim=32,
         dt_rank=8,
-        dim_inner=28,
-        d_state=28,
+        dim_inner=32,
+        d_state=32,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
@@ -889,7 +889,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0005, weight_decay=1e-03)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=1e-03)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10, verbose=True)
 
     # Training loop
