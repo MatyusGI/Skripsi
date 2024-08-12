@@ -872,9 +872,9 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Initialize the Vim model
     model = Vim(
-        dim=64,
+        dim=80,
         dt_rank=16,
-        dim_inner=64,
+        dim_inner=80,
         d_state=64,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
