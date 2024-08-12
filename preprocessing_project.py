@@ -1005,7 +1005,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
     # Save the trained model
-    model_save_path = 'vim_model.pth'
+    model_save_path = 'vim_model_'+str(epoch)+'.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
@@ -1417,13 +1417,13 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=200, name='')
+    train_y, test_x, test_y, epoch=400, name='')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_vim_200_epoch'
+        name='training_performance_vim_400_epoch'
     )
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_200_epoch')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_400_epoch')
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
