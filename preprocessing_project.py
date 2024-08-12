@@ -880,8 +880,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.3,
-        depth=4,
+        dropout=0.2,
+        depth=5,
     )
 
     # Move the model to the GPU
