@@ -872,16 +872,16 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Initialize the Vim model
     model = Vim(
-        dim=128,
+        dim=80,
         dt_rank=16,
-        dim_inner=128,
-        d_state=97,
+        dim_inner=80,
+        d_state=64,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.2677301595791723,
-        depth=7,
+        dropout=0.2,
+        depth=5,
     )
 
     # Move the model to the GPU
@@ -889,7 +889,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.00015334092031733988, weight_decay=1e-03)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=1e-03)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10, verbose=True)
 
     # Training loop
@@ -925,7 +925,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
             # Backward pass and optimize
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
 
             # Accumulate loss
