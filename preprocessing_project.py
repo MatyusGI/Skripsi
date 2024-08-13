@@ -926,7 +926,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
             # Backward pass and optimize
             loss.backward()
-            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.5)
             optimizer.step()
 
             # Accumulate loss
