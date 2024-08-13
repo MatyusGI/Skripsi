@@ -1516,8 +1516,8 @@ def main():
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
-    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch')
-    plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_200_epoch')
+    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch_0')
+    plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_200_epoch_0')
 
 
 if __name__ == '__main__':
