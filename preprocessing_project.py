@@ -1408,7 +1408,7 @@ def main():
                                                             file_residues_paths, max_res_list_h, max_res_list_l, heavy, light)
 
     # Create the test set
-    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.023, random_state=23)
+    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.023, random_state=None)
 
 
     # Training VIM with fix parameters
