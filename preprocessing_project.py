@@ -18,6 +18,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from vision_mamba.model import Vim
 import time
+import time as time_module
 
 from torch.nn import Linear, ReLU, Conv2d, MaxPool2d, Module
 from torch.autograd import Variable
@@ -1005,7 +1006,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
     print(f'Total Training Time: {total_training_time:.2f} seconds')
 
     # Save the trained model
-    model_save_path = 'vim_model_'+str(epoch+1)+'.pth'
+    current_dir = os.getcwd()
+    model_save_path = os.path.join(current_dir, 'result_random_none', 'vim', 'vim_model_0.pth')
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
@@ -1420,10 +1422,10 @@ def main():
     train_y, test_x, test_y, epoch=200, name='')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_vim_200_epoch'
+        name='training_performance_vim_200_epoch_0'
     )
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_200_epoch')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_200_epoch_0')
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -1475,42 +1477,47 @@ def main():
 
 
 
-    # # Training CNN with fix parameters
-    # n_filters = 4
-    # filter_size = 4
-    # pooling_size = 2
-    # learning_rate = 1e-4
-    # input_shape = train_x.shape[-1]
+    # Training CNN with fix parameters
+    n_filters = 4
+    filter_size = 4
+    pooling_size = 2
+    learning_rate = 1e-4
+    input_shape = train_x.shape[-1]
 
-    # # Defining the model, optimiser and loss function
-    # model = ANTIPASTI(n_filters=n_filters, filter_size=filter_size, pooling_size=pooling_size, input_shape=input_shape, l1_lambda=0.002)
-    # criterion = MSELoss()
-    # optimiser = AdaBelief(model.parameters(), lr=learning_rate, weight_decay=False, eps=1e-8, print_change_log=False)
-    # # optimiser = Adam(model.parameters(), lr=learning_rate)
-    # print(model)
+    # Defining the model, optimiser and loss function
+    model = ANTIPASTI(n_filters=n_filters, filter_size=filter_size, pooling_size=pooling_size, input_shape=input_shape, l1_lambda=0.002)
+    criterion = MSELoss()
+    optimiser = AdaBelief(model.parameters(), lr=learning_rate, weight_decay=False, eps=1e-8, print_change_log=False)
+    # optimiser = Adam(model.parameters(), lr=learning_rate)
+    print(model)
 
-    # train_losses = []
-    # test_losses = []
+    train_losses = []
+    test_losses = []
 
-    # model.train()
-    # n_max_epochs = 200 # This is just a super short example. You can increase this.
-    # max_corr = 0.95
-    # batch_size = 32
+    model.train()
+    n_max_epochs = 200 # This is just a super short example. You can increase this.
+    max_corr = 0.95
+    batch_size = 32
 
-    # start_time = time.time()  # Start timing the training process
-    # train_loss, test_loss, inter_filter, y_test, output_test = training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=n_max_epochs, max_corr=max_corr, batch_size=batch_size)
-    # end_time = time.time()  # End timing the training process
+    start_time = time_module.time()  # Start timing the training process
+    train_loss, test_loss, inter_filter, y_test, output_test = training_routine(model, criterion, optimiser, train_x, test_x, train_y, test_y, n_max_epochs=n_max_epochs, max_corr=max_corr, batch_size=batch_size)
+    end_time = time_module.time()  # End timing the training process
 
-    # # Calculate and print the total training time
-    # total_training_time = end_time - start_time
-    # print(f'Total Training Time: {total_training_time:.2f} seconds')
+    # Calculate and print the total training time
+    total_training_time = end_time - start_time
+    print(f'Total Training Time: {total_training_time:.2f} seconds')
 
-    # # Saving the losses
-    # train_losses.extend(train_loss)
-    # test_losses.extend(test_loss)
+    # Saving the losses
+    train_losses.extend(train_loss)
+    test_losses.extend(test_loss)
 
-    # plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch')
-    # plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_200_epoch')
+    # Save the trained model
+    model_save_path = os.path.join(current_dir, 'result_random_none', 'cnn', 'cnn_model_0.pth')
+    torch.save(model.state_dict(), model_save_path)
+    print(f'Model saved to {model_save_path}')
+
+    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch')
+    plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_200_epoch')
 
 
 if __name__ == '__main__':
