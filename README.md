@@ -8,6 +8,12 @@ conda env create -f project-env.yml
 conda activate project
 ```
 
+## Run
+required Rscript (change the Rscript path in generate_maps function if need to make new maps)
+```bash
+python preprocesssing_project.py
+```
+
 ## Requirements
 * `vision-mamba`
 * `numpy`
