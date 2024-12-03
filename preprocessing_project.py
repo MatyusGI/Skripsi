@@ -873,16 +873,16 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Initialize the Vim model
     model = Vim(
-        dim=28,
-        dt_rank=8,
-        dim_inner=28,
-        d_state=28,
+        dim=64,
+        dt_rank=16,
+        dim_inner=64,
+        d_state=64,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.5,
-        depth=4,
+        dropout=0.2,
+        depth=5,
     )
 
     # Move the model to the GPU
@@ -1007,7 +1007,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Save the trained model
     current_dir = os.getcwd()
-    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '3', 'vim_model_0.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_epoch', 'vim_model_0.pth')
     # model_save_path = 'vim_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
@@ -1420,13 +1420,13 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=200, name='')
+    train_y, test_x, test_y, epoch=100, name='')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_vim_200_epoch_0'
+        name='training_performance_vim_100_epoch_0'
     )
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_200_epoch_0')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_100_epoch_0')
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -1496,7 +1496,7 @@ def main():
     test_losses = []
 
     model.train()
-    n_max_epochs = 200 # This is just a super short example. You can increase this.
+    n_max_epochs = 100 # This is just a super short example. You can increase this.
     max_corr = 0.95
     batch_size = 32
 
@@ -1513,13 +1513,13 @@ def main():
     test_losses.extend(test_loss)
 
     # Save the trained model
-    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '3', 'cnn_model_0.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_epoch', 'cnn_model_0.pth')
     # model_save_path = 'cnn_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
-    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch_0')
-    plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_200_epoch_0')
+    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_100_epoch_0')
+    plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_100_epoch_0')
 
 
 if __name__ == '__main__':
