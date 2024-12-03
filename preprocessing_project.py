@@ -873,10 +873,10 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Initialize the Vim model
     model = Vim(
-        dim=32,
-        dt_rank=32,
-        dim_inner=32,
-        d_state=32,
+        dim=28,
+        dt_rank=8,
+        dim_inner=28,
+        d_state=28,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
@@ -890,7 +890,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Using Mean Squared Error Loss for a regression task
     criterion = MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=1e-03)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10, verbose=True)
 
     # Training loop
@@ -1007,7 +1007,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Save the trained model
     current_dir = os.getcwd()
-    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '2', 'vim_model_0.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '3', 'vim_model_0.pth')
     # model_save_path = 'vim_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
@@ -1513,7 +1513,7 @@ def main():
     test_losses.extend(test_loss)
 
     # Save the trained model
-    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '2', 'cnn_model_0.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '3', 'cnn_model_0.pth')
     # model_save_path = 'cnn_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
