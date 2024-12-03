@@ -1007,8 +1007,8 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Save the trained model
     current_dir = os.getcwd()
-    model_save_path = os.path.join(current_dir, 'result_random_23', 'vim', 'vim_model_0.pth')
-    # model_save_path = 'vim_model.pth'
+    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '1', 'vim_model_0.pth')
+    model_save_path = 'vim_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
@@ -1513,7 +1513,7 @@ def main():
     test_losses.extend(test_loss)
 
     # Save the trained model
-    model_save_path = os.path.join(current_dir, 'result_random_23', 'cnn', 'cnn_model_0.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '1', 'cnn_model_0.pth')
     # model_save_path = 'cnn_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
