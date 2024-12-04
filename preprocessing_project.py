@@ -873,16 +873,16 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Initialize the Vim model
     model = Vim(
-        dim=64,
-        dt_rank=16,
-        dim_inner=64,
-        d_state=64,
+        dim=32,
+        dt_rank=32,
+        dim_inner=32,
+        d_state=32,
         num_classes=1,  # For regression, typically the output is a single value per instance
         image_size=286,
         patch_size=13,
         channels=1,
-        dropout=0.2,
-        depth=5,
+        dropout=0.5,
+        depth=4,
     )
 
     # Move the model to the GPU
@@ -1007,7 +1007,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Save the trained model
     current_dir = os.getcwd()
-    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '1', 'vim_model_2.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '2', 'vim', 'vim_model_1.pth')
     # model_save_path = 'vim_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
@@ -1423,10 +1423,10 @@ def main():
     train_y, test_x, test_y, epoch=200, name='')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_vim_200_epoch_2'
+        name='training_performance_vim_200_epoch_1'
     )
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_200_epoch_2')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_200_epoch_1')
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -1513,13 +1513,13 @@ def main():
     test_losses.extend(test_loss)
 
     # Save the trained model
-    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '1', 'cnn_model_2.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_parameter', '2', 'cnn', 'cnn_model_1.pth')
     # model_save_path = 'cnn_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
-    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch_2')
-    plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_200_epoch_2')
+    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch_1')
+    plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_200_epoch_1')
 
 
 if __name__ == '__main__':
