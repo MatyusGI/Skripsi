@@ -1007,7 +1007,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Save the trained model
     current_dir = os.getcwd()
-    model_save_path = os.path.join(current_dir, 'pengujian_split_data', '97,7-2,3', 'vim_model_0.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_split_data', '95-5', 'vim_model_0.pth')
     # model_save_path = 'vim_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
@@ -1411,7 +1411,7 @@ def main():
                                                             file_residues_paths, max_res_list_h, max_res_list_l, heavy, light)
 
     # Create the test set
-    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.023, random_state=23)
+    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.05, random_state=23)
 
 
     # Training VIM with fix parameters
@@ -1513,7 +1513,7 @@ def main():
     test_losses.extend(test_loss)
 
     # Save the trained model
-    model_save_path = os.path.join(current_dir, 'pengujian_split_data', '97,7-2,3', 'cnn_model_0.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_split_data', '95-5', 'cnn_model_0.pth')
     # model_save_path = 'cnn_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
