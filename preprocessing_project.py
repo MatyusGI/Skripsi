@@ -1007,7 +1007,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Save the trained model
     current_dir = os.getcwd()
-    model_save_path = os.path.join(current_dir, 'pengujian_epoch', 'vim', 'vim_model_2.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_split_data', '80-20', 'vim_model_0.pth')
     # model_save_path = 'vim_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
@@ -1411,7 +1411,7 @@ def main():
                                                             file_residues_paths, max_res_list_h, max_res_list_l, heavy, light)
 
     # Create the test set
-    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.023, random_state=23)
+    train_x, test_x, train_y, test_y, idx_tr, idx_te = create_test_set(train_x, train_y, test_size=0.2, random_state=23)
 
 
     # Training VIM with fix parameters
@@ -1420,13 +1420,13 @@ def main():
     # plot_vim(loss_values, correlation_values, num_epochs, name='training_performance_vim_200_epoch')
 
     model, train_loss_values, train_correlation_values, test_loss_values, test_correlation_values, num_epochs, time = training_vim_test(train_x, 
-    train_y, test_x, test_y, epoch=300, name='')
+    train_y, test_x, test_y, epoch=100, name='')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_vim_300_epoch_0'
+        name='training_performance_vim_100_epoch_0'
     )
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_300_epoch_0')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_100_epoch_0')
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -1496,7 +1496,7 @@ def main():
     test_losses = []
 
     model.train()
-    n_max_epochs = 300 # This is just a super short example. You can increase this.
+    n_max_epochs = 100 # This is just a super short example. You can increase this.
     max_corr = 0.95
     batch_size = 32
 
@@ -1513,13 +1513,13 @@ def main():
     test_losses.extend(test_loss)
 
     # Save the trained model
-    model_save_path = os.path.join(current_dir, 'pengujian_epoch', 'cnn', 'cnn_model_2.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian_split_data', '80-20', 'cnn_model_0.pth')
     # model_save_path = 'cnn_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
-    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_300_epoch_0')
-    plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_300_epoch_0')
+    plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_100_epoch_0')
+    plot_loss_cnn(test_losses, train_losses, name='loss_training_performance_cnn_100_epoch_0')
 
 
 if __name__ == '__main__':
