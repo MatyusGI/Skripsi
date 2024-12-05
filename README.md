@@ -27,4 +27,4 @@ python preprocesssing_project.py
 
 ## Example Notebook
 You can find example notebooks in [notebooks_project](https://github.com/MatyusGI/Skripsi/edit/main/notebooks_project) folder:
-* [preprocessing_project-copy1](https://github.com/MatyusGI/Skripsi/edit/main/notebooks_project/)
+* [preprocessing_project-copy1](https://github.com/MatyusGI/Skripsi/blob/main/notebooks_project/preprocessing_project-Copy1.ipynb)
