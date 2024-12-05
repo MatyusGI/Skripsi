@@ -1,5 +1,6 @@
 {
     "dim": 128,
+    "dt_rank": 32,
     "dim_inner": 128,
     "d_state": 97,
     "depth": 7,
