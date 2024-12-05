@@ -24,3 +24,7 @@ python preprocesssing_project.py
 * `matplotlib`
 * `adabelief-pytorch`
 * `biopython`
+
+## Example Notebook
+You can find example notebooks in [notebooks_project](https://github.com/MatyusGI/Skripsi/edit/main/notebooks_project) folder:
+* [preprocessing_project-copy1](https://github.com/MatyusGI/Skripsi/edit/main/notebooks_project/)
