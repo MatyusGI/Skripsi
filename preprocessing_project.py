@@ -1515,7 +1515,7 @@ def main():
     # Save the trained model
     model_save_path = os.path.join(current_dir, 'pengujian', 'pengujian_parameter', '1', 'cnn', 'cnn_model_3.pth')
     # model_save_path = 'cnn_model.pth'
-    torch.save(model.state_dict(), model_save_path2
+    torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
 
     plot_r_cnn(output_test, y_test, name='R_training_performance_cnn_200_epoch_3')
