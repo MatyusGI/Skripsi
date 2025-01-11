@@ -27,7 +27,7 @@ python Project.py
 
 ## Example Notebook
 You can find example notebooks in [notebooks_project](https://github.com/MatyusGI/Skripsi/edit/main/notebooks_project) folder:
-* [preprocessing_project-copy1](https://github.com/MatyusGI/Skripsi/blob/main/notebooks_project/demo_notebook_project.ipynb)
+* [demo_notebook_project](https://github.com/MatyusGI/Skripsi/blob/main/notebooks_project/demo_notebook_project.ipynb)
 
 ## Notes
 * To make new maps, you need to download all structures from SabDAb
