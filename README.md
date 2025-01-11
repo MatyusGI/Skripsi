@@ -11,7 +11,7 @@ conda activate project
 ## Run
 required Rscript (change the Rscript path in generate_maps function if need to make new maps)
 ```bash
-python preprocesssing_project.py
+python Project.py
 ```
 
 ## Requirements
@@ -27,7 +27,7 @@ python preprocesssing_project.py
 
 ## Example Notebook
 You can find example notebooks in [notebooks_project](https://github.com/MatyusGI/Skripsi/edit/main/notebooks_project) folder:
-* [preprocessing_project-copy1](https://github.com/MatyusGI/Skripsi/blob/main/notebooks_project/preprocessing_project-Copy1.ipynb)
+* [preprocessing_project-copy1](https://github.com/MatyusGI/Skripsi/blob/main/notebooks_project/demo_notebook_project.ipynb)
 
 ## Notes
 * To make new maps, you need to download all structures from SabDAb
