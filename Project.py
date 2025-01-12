@@ -904,7 +904,7 @@ def training_vim_test(train_x, train_y, test_x, test_y, epoch, name):
 
     # Save the trained model
     current_dir = os.getcwd()
-    model_save_path = os.path.join(current_dir, 'pengujian', 'pengujian_epoch', 'vim', 'vim_model_50_0.pth')
+    model_save_path = os.path.join(current_dir, 'pengujian', 'pengujian_epoch', 'vim', 'vim_model_50_1.pth')
     # model_save_path = 'vim_model.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f'Model saved to {model_save_path}')
@@ -1303,10 +1303,10 @@ def main():
     train_y, test_x, test_y, epoch=50, name='')
     plot_vim_combined(
         train_loss_values, test_loss_values, train_correlation_values, test_correlation_values, num_epochs, time, 
-        name='training_performance_vim_50_epoch_0'
+        name='training_performance_vim_50_epoch_1'
     )
     test_mse, test_corr, outputs_flat, targets_flat = test_vim(model, test_x, test_y)
-    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_50_epoch_0')
+    plot_test_results(outputs_flat, targets_flat, test_corr, test_mse, name='R_performace_vim_50_epoch_1')
 
     # # Set CUDA_LAUNCH_BLOCKING to help with debugging
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
