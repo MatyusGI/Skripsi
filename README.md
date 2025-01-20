@@ -31,4 +31,5 @@ You can find example notebooks in [notebooks_project](https://github.com/MatyusG
 
 ## Notes
 * To make new maps, you need to download all structures from SabDAb
+* you can find the dataset used in this code in [test_data](https://github.com/MatyusGI/Skripsi/tree/main/notebooks/test_data)
 * This code needs to run in the minimum specification of 8 GB VRAM GPU 
